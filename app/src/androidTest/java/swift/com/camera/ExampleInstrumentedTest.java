@@ -1,4 +1,4 @@
-package app.m15.cn.camera;
+package swift.com.camera;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("app.m15.cn.camera", appContext.getPackageName());
+        assertEquals("swift.com.camera", appContext.getPackageName());
     }
 }

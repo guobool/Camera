@@ -1,4 +1,4 @@
-package app.m15.cn.camera.ui.activity;
+package swift.com.camera;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -6,7 +6,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-import app.m15.cn.camera.R;
+import swift.com.camera.ui.activity.CameraActivity;
+import swift.com.camera.ui.activity.ProcessingActivity;
 
 public class MainActivity extends AppCompatActivity {
     private Button mBtnCamera; //相机页面跳转按钮

@@ -1,4 +1,4 @@
-package app.m15.cn.camera;
+package swift.com.camera;
 
 import org.junit.Test;
 

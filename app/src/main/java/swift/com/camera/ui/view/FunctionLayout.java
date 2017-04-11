@@ -1,11 +1,11 @@
-package app.m15.cn.camera.ui.view;
+package swift.com.camera.ui.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.widget.RelativeLayout;
 
-import app.m15.cn.camera.R;
+import swift.com.camera.R;
 
 /**
  * Created by bool on 17-4-10.
