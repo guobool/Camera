@@ -6,14 +6,17 @@ package swift.com.camera;
 
 public class MainContract {
 
+    // UI展示
     interface View {
 
     }
 
+    // 逻辑处理
     interface Presenter {
 
     }
 
+    // 数据存储
     interface Support {
 
     }

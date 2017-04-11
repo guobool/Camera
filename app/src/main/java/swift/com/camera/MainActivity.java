@@ -9,7 +9,7 @@ import android.widget.Button;
 import swift.com.camera.ui.activity.CameraActivity;
 import swift.com.camera.ui.activity.ProcessingActivity;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainContract.View {
     private Button mBtnCamera; //相机页面跳转按钮
     private Button mBtnProcessuing; //处理页面跳转按钮
     @Override
