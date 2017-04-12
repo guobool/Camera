@@ -1,4 +1,4 @@
-package app.m15.cn.camera.data;
+package swift.com.camera.data;
 
 /**
  * Created by bool on 17-4-11.

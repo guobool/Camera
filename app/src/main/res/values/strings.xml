@@ -9,7 +9,13 @@
     <string name="myAlbum">我的相册</string>
     <string name="otherAlbum">其他相册</string>
     <string name="privacyAlbum">私密相册</string>
-    <string name="smartOpt">智能优化</string>
+    <string name="optimization">智能优化</string>
     <string name="camera">相机</string>
     <string name="processing">加工</string>
+    <string name="edit">编辑</string>
+    <string name="enhance">增强</string>
+    <string name="specialEffects">特效</string>
+    <string name="mosaic">马赛克</string>
+    <string name="sticker">贴纸</string>
+    <string name="cosmetology">美容</string>
 </resources>

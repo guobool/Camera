@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import swift.com.camera.R;
 
@@ -12,7 +13,7 @@ import swift.com.camera.R;
  */
 
 public class FunctionLayout extends RelativeLayout {
-
+    private TextView mTvDesction;
     public FunctionLayout(Context context) {
         super(context);
         initLayout(context);
@@ -29,6 +30,10 @@ public class FunctionLayout extends RelativeLayout {
 
     private void initLayout(Context context){
         LayoutInflater.from(context).inflate(R.layout.function_layout, this, true);
+        mTvDesction = ((TextView)findViewById(R.id.tvDescription));
     }
 
+    public void setDesption(String desc){
+        mTvDesction.setText(desc);
+    }
 }

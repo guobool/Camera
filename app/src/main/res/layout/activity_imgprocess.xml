@@ -36,11 +36,11 @@
             >
 
             <swift.com.camera.ui.view.FunctionLayout
-                android:id="@+id/first_func1"
+                android:id="@+id/rlOneLeyBeautify"
                 />
 
             <swift.com.camera.ui.view.FunctionLayout
-                android:id="@+id/first_func2"
+                android:id="@+id/rlBeautifyPictures"
                 />
 
 
@@ -52,11 +52,11 @@
             android:layout_weight="1">
 
             <swift.com.camera.ui.view.FunctionLayout
-                android:id="@+id/first_func3"
+                android:id="@+id/rlPuzzle"
                 />
 
             <swift.com.camera.ui.view.FunctionLayout
-                android:id="@+id/first_func4"
+                android:id="@+id/rlPictureInPicture"
                 >
 
             </swift.com.camera.ui.view.FunctionLayout>

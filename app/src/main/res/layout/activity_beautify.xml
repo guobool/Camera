@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_weight="1"
+        tools:ignore="ObsoleteLayoutParam">
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            app:srcCompat="@mipmap/background"
+            android:contentDescription="Todo" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/button11"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                style="?android:attr/buttonBarButtonStyle"
+                android:src="@drawable/vector_drawable_back"
+                android:contentDescription="Todo"/>
+
+            <ImageButton
+                android:id="@+id/button10"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toLeftOf="@+id/btnCenter"
+                style="?android:attr/buttonBarButtonStyle"
+                android:src="@drawable/vector_drawable_backup"
+                android:contentDescription="Todo"/>
+
+            <!--用于控制中间位置，左右两个图标以此位置布局-->
+            <Button
+                android:id="@+id/btnCenter"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                style="?android:attr/buttonBarButtonStyle"
+                />
+            <ImageButton
+                android:id="@+id/button7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_toRightOf="@id/btnCenter"
+                android:src="@drawable/vector_drawable_forward"
+                android:contentDescription="Todo"/>
+
+            <ImageButton
+                android:id="@+id/button6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toLeftOf="@+id/btnShare"
+                style="?android:attr/buttonBarButtonStyle"
+                android:src="@drawable/vector_drawable_down"
+                android:contentDescription="Todo"/>
+
+            <ImageButton
+                android:id="@+id/btnShare"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                style="?android:attr/buttonBarButtonStyle"
+                android:src="@drawable/vector_drawable_share"
+                android:contentDescription="Todo"/>
+        </RelativeLayout>
+    </FrameLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        android:padding="0dp">
+
+        <Button
+            android:id="@+id/btnOptimization"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            style="?android:attr/buttonBarButtonStyle"
+            android:text="@string/optimization"
+            android:textSize="12sp"/>
+
+        <Button
+            android:id="@+id/btnEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            style="?android:attr/buttonBarButtonStyle"
+            android:text="@string/edit"
+            android:textSize="12sp"/>
+
+        <Button
+            android:id="@+id/btnEnhance"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            style="?android:attr/buttonBarButtonStyle"
+            android:text="@string/enhance"
+            android:textSize="12sp"/>
+
+        <Button
+            android:id="@+id/btnSpecialEffects"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            style="?android:attr/buttonBarButtonStyle"
+            android:text="@string/specialEffects"
+            android:textSize="12sp"/>
+
+        <Button
+            android:id="@+id/btnMosaic"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/mosaic"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/btnSticker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            style="?android:attr/buttonBarButtonStyle"
+            android:text="@string/sticker"
+            android:textSize="12sp"/>
+
+        <Button
+            android:id="@+id/btnCosmetology"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/cosmetology"
+            style="?android:attr/buttonBarButtonStyle"
+            android:textSize="12sp"/>
+    </LinearLayout>
+
+
+
+</LinearLayout>
