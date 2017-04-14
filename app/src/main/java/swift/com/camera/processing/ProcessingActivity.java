@@ -6,10 +6,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
-import swift.com.camera.Injection;
+import javax.inject.Inject;
+
 import swift.com.camera.R;
 import swift.com.camera.Album.AlbumActivity;
 import swift.com.camera.beautify.BeautifyActivity;
+import swift.com.camera.data.DaggerPictureRepositoryComponent;
+import swift.com.camera.data.PictureRepository;
+import swift.com.camera.data.PictureRepositoryComponent;
+import swift.com.camera.data.PictureRepositoryModule;
 import swift.com.camera.ui.view.FunctionLayout;
 
 import static com.squareup.haha.guava.base.Joiner.checkNotNull;
@@ -19,7 +24,7 @@ import static com.squareup.haha.guava.base.Joiner.checkNotNull;
  */
 
 public class ProcessingActivity extends AppCompatActivity implements ProcessingContract.View{
-    private ProcessingContract.Presenter mPresenter;
+    @Inject  ProcessingPresenter mPresenter;
     private FunctionLayout mRlOneLeyBeautify; // 一键美图
     private FunctionLayout mRlBeautifyPictures;  // 美化图片
     private FunctionLayout mRlPuzzle; // 拼图
@@ -33,7 +38,23 @@ public class ProcessingActivity extends AppCompatActivity implements ProcessingC
         mRlPuzzle = (FunctionLayout)findViewById(R.id.rlPuzzle);
         mRlPictureInPicture = (FunctionLayout)findViewById(R.id.rlPictureInPicture);
         // 添加Presenter
-        mPresenter = new ProcessingPresenter(Injection.providePictureRepository(this), this);
+        // 依赖对象　Component
+        PictureRepositoryComponent appCom = DaggerPictureRepositoryComponent.builder()
+                .pictureRepositoryModule(new PictureRepositoryModule()).build();
+
+        // 子类依赖对象 ，并注入
+        DaggerProcessingComponent.builder()
+                .pictureRepositoryComponent(appCom)
+                .processingPresenterModule(new ProcessingPresenterModule(this))
+                .build()
+                .inject(this);
+
+        // Create the presenter
+//        DaggerTasksComponent.builder()
+//                .tasksRepositoryComponent(((ToDoApplication) getApplication()).getTasksRepositoryComponent())
+//                .tasksPresenterModule(new TasksPresenterModule(tasksFragment)).build()
+//                .inject(this);
+
 
         mRlOneLeyBeautify.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,6 +101,6 @@ public class ProcessingActivity extends AppCompatActivity implements ProcessingC
 
     @Override
     public void setPresenter(ProcessingContract.Presenter presenter) {
-        mPresenter = checkNotNull(presenter);
+        mPresenter = (ProcessingPresenter)checkNotNull(presenter);
     }
 }

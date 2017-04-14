@@ -3,6 +3,8 @@ package swift.com.camera.processing;
 
 import android.support.annotation.NonNull;
 
+import javax.inject.Inject;
+
 import swift.com.camera.data.PictureRepository;
 
 import static com.squareup.haha.guava.base.Joiner.checkNotNull;
@@ -15,10 +17,15 @@ public class ProcessingPresenter implements ProcessingContract.Presenter{
 
     private PictureRepository mRepository;
     private ProcessingContract.View mProcessingView;
-    public ProcessingPresenter(@NonNull PictureRepository repository,
-                               @NonNull ProcessingContract.View view) {
+
+    @Inject
+    public ProcessingPresenter(PictureRepository repository, ProcessingContract.View view) {
         mRepository = checkNotNull(repository);
         mProcessingView = checkNotNull(view);
+    }
+
+    @Inject
+    void setupListeners() {
         mProcessingView.setPresenter(this);
     }
 

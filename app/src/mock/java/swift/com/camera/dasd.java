@@ -9,7 +9,7 @@ import static com.squareup.haha.guava.base.Joiner.checkNotNull;
  * Created by bool on 17-4-12.
  */
 
-public class Injection {
+public class dasd {
     public static PictureRepository providePictureRepository(@NonNull Context context) {
         checkNotNull(context);
         return new PictureRepository();

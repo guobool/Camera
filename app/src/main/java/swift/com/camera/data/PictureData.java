@@ -5,4 +5,7 @@ package swift.com.camera.data;
  */
 
 public final class PictureData {
+    public PictureData(){
+
+    }
 }
