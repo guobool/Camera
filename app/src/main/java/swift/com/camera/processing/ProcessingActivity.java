@@ -3,18 +3,14 @@ package swift.com.camera.processing;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 
 import javax.inject.Inject;
 
 import swift.com.camera.R;
 import swift.com.camera.Album.AlbumActivity;
+import swift.com.camera.TheApplication;
 import swift.com.camera.beautify.BeautifyActivity;
-import swift.com.camera.data.DaggerPictureRepositoryComponent;
-import swift.com.camera.data.PictureRepository;
-import swift.com.camera.data.PictureRepositoryComponent;
-import swift.com.camera.data.PictureRepositoryModule;
 import swift.com.camera.ui.view.FunctionLayout;
 
 import static com.squareup.haha.guava.base.Joiner.checkNotNull;
@@ -37,30 +33,18 @@ public class ProcessingActivity extends AppCompatActivity implements ProcessingC
         mRlBeautifyPictures = (FunctionLayout)findViewById(R.id.rlBeautifyPictures);
         mRlPuzzle = (FunctionLayout)findViewById(R.id.rlPuzzle);
         mRlPictureInPicture = (FunctionLayout)findViewById(R.id.rlPictureInPicture);
-        // 添加Presenter
-        // 依赖对象　Component
-        PictureRepositoryComponent appCom = DaggerPictureRepositoryComponent.builder()
-                .pictureRepositoryModule(new PictureRepositoryModule()).build();
 
         // 子类依赖对象 ，并注入
         DaggerProcessingComponent.builder()
-                .pictureRepositoryComponent(appCom)
+                .pictureRepositoryComponent(((TheApplication)getApplication()).getTasksRepositoryComponent())
                 .processingPresenterModule(new ProcessingPresenterModule(this))
                 .build()
                 .inject(this);
-
-        // Create the presenter
-//        DaggerTasksComponent.builder()
-//                .tasksRepositoryComponent(((ToDoApplication) getApplication()).getTasksRepositoryComponent())
-//                .tasksPresenterModule(new TasksPresenterModule(tasksFragment)).build()
-//                .inject(this);
-
 
         mRlOneLeyBeautify.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mPresenter.jumpAlbumPage();
-                Log.w(this.getClass().getName(), "绑定监听器");
             }
         });
 
@@ -74,14 +58,12 @@ public class ProcessingActivity extends AppCompatActivity implements ProcessingC
             @Override
             public void onClick(View v) {
                 mPresenter.jumpAlbumPage();
-                Log.w(this.getClass().getName(), "绑定监听器");
             }
         });
         mRlPictureInPicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mPresenter.jumpAlbumPage();
-                Log.w(this.getClass().getName(), "绑定监听器");
             }
         });
     }

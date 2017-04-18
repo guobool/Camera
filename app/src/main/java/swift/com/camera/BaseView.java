@@ -6,4 +6,5 @@ package swift.com.camera;
 
 public interface BaseView<T> {
     void setPresenter(T presenter);
+
 }

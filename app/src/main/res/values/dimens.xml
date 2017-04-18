@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="dp_5" >5dp</dimen>
+    <dimen name="divider_height">1dp</dimen>
+    <dimen name="tag_width">10dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+</resources>

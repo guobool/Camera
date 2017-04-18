@@ -1,8 +1,6 @@
 package swift.com.camera.processing;
 
 
-import android.support.annotation.NonNull;
-
 import javax.inject.Inject;
 
 import swift.com.camera.data.PictureRepository;
