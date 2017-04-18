@@ -2,12 +2,14 @@ package swift.com.camera.ui.activity;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 
 import java.io.File;
@@ -141,7 +143,7 @@ public class CameraPresenter implements CameraContract.Presenter {
         params.setRotation(90);
         mCamera.mCameraInstance.setParameters(params);
         for (Camera.Size size : params.getSupportedPictureSizes()) {
-            Log.i("ASDF", "Supported: " + size.width + "x" + size.height);
+            Log.i("SwiftCamera", "Supported: " + size.width + "x" + size.height);
         }
         mCamera.mCameraInstance.takePicture(null, null,
                 new Camera.PictureCallback() {
@@ -151,8 +153,7 @@ public class CameraPresenter implements CameraContract.Presenter {
 
                         final File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
                         if (pictureFile == null) {
-                            Log.d("ASDF",
-                                    "Error creating media file, check storage permissions");
+                            Log.d("SwiftCamera", "Error creating media file, check storage permissions");
                             return;
                         }
 
@@ -161,22 +162,19 @@ public class CameraPresenter implements CameraContract.Presenter {
                             fos.write(data);
                             fos.close();
                         } catch (FileNotFoundException e) {
-                            Log.d("ASDF", "File not found: " + e.getMessage());
+                            Log.d("SwiftCamera", "File not found: " + e.getMessage());
                         } catch (IOException e) {
-                            Log.d("ASDF", "Error accessing file: " + e.getMessage());
+                            Log.d("SwiftCamera", "Error accessing file: " + e.getMessage());
                         }
 
                         data = null;
                         final Bitmap bitmap = BitmapFactory.decodeFile(pictureFile.getAbsolutePath());
                         // mGPUImage.setImage(bitmap);
                         mCameraView.setGLSurfaceViewRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-                        mGPUImage.saveToPictures(bitmap, "GPUImage",
-                                System.currentTimeMillis() + ".jpg",
-                                new GPUImage.OnPictureSavedListener() {
+                        mGPUImage.saveToPictures(bitmap, "SwiftCamera", System.currentTimeMillis() + ".jpg", new GPUImage.OnPictureSavedListener() {
 
                                     @Override
-                                    public void onPictureSaved(final Uri
-                                                                       uri) {
+                                    public void onPictureSaved(final Uri uri) {
                                         if(bitmap != null && !bitmap.isRecycled()){
                                             bitmap.recycle();
                                         }
@@ -200,14 +198,14 @@ public class CameraPresenter implements CameraContract.Presenter {
         // using Environment.getExternalStorageState() before doing this.
 
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "MyCameraApp");
+                Environment.DIRECTORY_PICTURES), "SwiftCamera");
         // This location works best if you want the created images to be shared
         // between applications and persist after your app has been uninstalled.
 
         // Create the storage directory if it does not exist
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
-                Log.d("MyCameraApp", "failed to create directory");
+                Log.d("SwiftCamera", "failed to create directory");
                 return null;
             }
         }

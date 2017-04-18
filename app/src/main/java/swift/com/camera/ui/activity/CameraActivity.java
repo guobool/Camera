@@ -70,6 +70,10 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
             case R.id.filter:
                 mCameraPresenter.chooseFilter();
                 break;
+
+            case R.id.goBack:
+                finish();
+                break;
         }
     }
 
