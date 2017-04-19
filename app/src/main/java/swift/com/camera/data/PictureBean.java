@@ -1,12 +1,12 @@
 package swift.com.camera.data;
 
-import android.media.Image;
+import java.io.Serializable;
 
 /**
  * Created by bool on 17-4-11.
  */
 
-public final class PictureBean {
+public final class PictureBean implements Serializable {
     private String mImagePath;
 
     public PictureBean(String path){
@@ -14,8 +14,5 @@ public final class PictureBean {
     }
     public String getmImagePath(){
         return mImagePath;
-    }
-    public Image getImage(){
-        return null;
     }
 }

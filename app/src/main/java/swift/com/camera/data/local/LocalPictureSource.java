@@ -8,6 +8,8 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.LruCache;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -35,7 +37,7 @@ public class LocalPictureSource implements PictureDataSource {
         // 获应用程序的最大内存
         final int maxMemory = (int)(Runtime.getRuntime().maxMemory() / 1024);
         //使用应用内存的1/4来存储图片
-        final int catchSize = maxMemory/4;
+        final int catchSize = maxMemory / 4;
         mMemoryCache = new LruCache<String, Bitmap>(catchSize){
             // 获取每张图片大小
             @Override
@@ -80,8 +82,7 @@ public class LocalPictureSource implements PictureDataSource {
 
         if(bitmap == null){
             //根据传入的宽高获取图片，对图片进行了缩放
-            // bitmap = decodeThumbBitmapForFile(pathName, width , height);
-
+            bitmap = getBitmapFromFile(pathName, width , height);
             //将图片加入到内存缓存
             addBitmapToMemoryCache(pathName, bitmap);
         }
@@ -99,28 +100,9 @@ public class LocalPictureSource implements PictureDataSource {
         }
     }
 
-    /**
-     * @param pathName 图片完整路径
-     * @param width 缩放后的宽度
-     * @param height 缩放后的高度
-     * @return 图片
-     */
-    private Bitmap decodeThumbBitmapForFile(String pathName, int width, int height) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        //设置为true,表示解析Bitmap对象，该对象不占内存
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(pathName, options);
-        //设置缩放比例
-        options.inSampleSize = computeScale(options, width, height);
-
-        //设置为false,解析Bitmap对象加入到内存中
-        options.inJustDecodeBounds = false;
-
-        return BitmapFactory.decodeFile(pathName, options);
-    }
 
     /**
-     * 根据View(主要是ImageView)的宽和高来计算Bitmap缩放比例。默认不缩放
+     * 根据View(主要是ImageView)的宽和高来计算Bitmap缩放比例。当viewWidth和viewHeight之一是0，则不缩放
      * @param options 图片的
      * @param viewWidth 图片宽度
      * @param viewHeight 图片高度
@@ -142,6 +124,31 @@ public class LocalPictureSource implements PictureDataSource {
             inSampleSize = widthScale < heightScale ? widthScale : heightScale;
         }
         return inSampleSize;
+    }
+
+    public Bitmap getBitmapFromFile(String pathName, int width, int height) {
+        File dst = new File(pathName);
+        if (null != dst && dst.exists()) {
+            BitmapFactory.Options opts = null;
+            if (width > 0 && height > 0) {
+                opts = new BitmapFactory.Options();
+                //设置inJustDecodeBounds为true后，decodeFile并不分配空间，此时计算原始图片的长度和宽度
+                opts.inJustDecodeBounds = true;
+                BitmapFactory.decodeFile(dst.getPath(), opts);
+                // 计算图片缩放比例
+                final int minSideLength = Math.min(width, height);
+                opts.inSampleSize = computeScale(opts, width, height);
+                opts.inJustDecodeBounds = false;
+                opts.inInputShareable = true;
+                opts.inPurgeable = true;
+            }
+            try {
+                return BitmapFactory.decodeFile(dst.getPath(), opts);
+            } catch (OutOfMemoryError e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 
 }

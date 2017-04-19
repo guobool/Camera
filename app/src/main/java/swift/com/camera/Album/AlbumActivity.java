@@ -11,9 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -48,13 +46,7 @@ public class AlbumActivity extends AppCompatActivity implements AlbumContract.Vi
         ActionBar actionBar = getSupportActionBar();
         actionBar.setHomeAsUpIndicator(R.drawable.vector_drawable_back);
         actionBar.setDisplayHomeAsUpEnabled(true);
-//        mFabComplateSelect = (FloatingActionButton)findViewById(R.id.fabComplateSelect);
-//        mFabComplateSelect.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                mPresenter.toBeautifyActivity();
-//            }
-//        });
+
         //添加菜单点击事件
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,7 +54,6 @@ public class AlbumActivity extends AppCompatActivity implements AlbumContract.Vi
                 mPresenter.toProcessingActivity();
             }
         });
-        Log.e("xcvc","AlbumActivity");
         // 注入AlbumPresenter对象
         DaggerAlbumComponent.builder()
                 .pictureRepositoryComponent(((TheApplication)getApplication()).getTasksRepositoryComponent())
@@ -104,5 +95,9 @@ public class AlbumActivity extends AppCompatActivity implements AlbumContract.Vi
     public void toBeautifyActivity() {
         Intent intent = new Intent(this, BeautifyActivity.class);
         startActivity(intent);
+    }
+
+    public void onItemSelected(int index) {
+        mPresenter.toBeaytifyActivity(mImageList.get(index));
     }
 }

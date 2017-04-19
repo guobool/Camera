@@ -12,11 +12,11 @@
         app:srcCompat="@mipmap/background"
         android:contentDescription="@string/pictureDesc" />
 
-    <CheckBox
-        android:id="@+id/cbSelect"
-        android:layout_gravity="end"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:button="@drawable/pictures_select_icon" />
+    <!--<CheckBox-->
+        <!--android:id="@+id/cbSelect"-->
+        <!--android:layout_gravity="end"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:button="@drawable/pictures_select_icon" />-->
 
 </FrameLayout>

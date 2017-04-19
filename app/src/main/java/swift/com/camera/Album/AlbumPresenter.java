@@ -1,10 +1,13 @@
 package swift.com.camera.Album;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import java.util.List;
 
 import javax.inject.Inject;
 
+import swift.com.camera.beautify.BeautifyActivity;
 import swift.com.camera.data.PictureBean;
 import swift.com.camera.data.PictureRepository;
 
@@ -15,7 +18,7 @@ import swift.com.camera.data.PictureRepository;
 class AlbumPresenter implements AlbumContract.Presenter {
     private PictureRepository mPictureReposotory;
     private AlbumContract.View mAlbumView;
-    private List<PictureBean> images;
+    private List<PictureBean> mImages;
     @Inject
     public AlbumPresenter(PictureRepository repository, AlbumContract.View albumView){
         mPictureReposotory = repository;
@@ -35,7 +38,7 @@ class AlbumPresenter implements AlbumContract.Presenter {
     }
 
     public List<PictureBean> getImages() {
-        return images;
+        return mImages;
     }
 
     @Override
@@ -51,5 +54,12 @@ class AlbumPresenter implements AlbumContract.Presenter {
     @Override
     public List<PictureBean> getImagesList() {
         return mPictureReposotory.getPicture();
+    }
+
+    @Override
+    public void toBeaytifyActivity(PictureBean pictureBean) {
+        Intent intent = new Intent((Context) mAlbumView, BeautifyActivity.class);
+        intent.putExtra("PictureBean", pictureBean);
+        ((Context) mAlbumView).startActivity(intent);
     }
 }

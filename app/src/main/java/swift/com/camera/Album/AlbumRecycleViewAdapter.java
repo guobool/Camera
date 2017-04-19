@@ -23,31 +23,34 @@ public class AlbumRecycleViewAdapter extends RecyclerView.Adapter<
     @Override
     public ImageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         ImageViewHolder holder = new ImageViewHolder(new SelectImageView(mContext));
-        Log.e("onCreateViewHolder", "onCreateViewHolder");
         return holder;
     }
 
     @Override
     public void onBindViewHolder(ImageViewHolder holder, int position) {
-        // 根据显示的宽高获取相应尺寸的图片，
+        // 根据显示的宽高获取相应尺寸的图片
         Bitmap bitmap = mContext.getImage(position,
                 holder.mSivItem.getWidth(), holder.mSivItem.getHeight());
         holder.mSivItem.setImage(bitmap);
-
     }
 
     @Override
     public int getItemCount() {
         int i = mContext.getImageNum();
-        Log.e("xcvc","getItemCount"+ i);
         return mContext.getImageNum();
     }
 
-    public class ImageViewHolder extends RecyclerView.ViewHolder {
+    public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         SelectImageView mSivItem;
         public ImageViewHolder(View itemView) {
             super(itemView);
             mSivItem = (SelectImageView) itemView;
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            mContext.onItemSelected(getAdapterPosition());
         }
     }
 }

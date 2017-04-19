@@ -24,5 +24,7 @@ public interface AlbumContract {
         void toBeautifyActivity();
 
         List<PictureBean> getImagesList();
+
+        void toBeaytifyActivity(PictureBean pictureBean);
     }
 }

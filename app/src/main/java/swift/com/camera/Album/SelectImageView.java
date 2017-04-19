@@ -16,15 +16,18 @@ import swift.com.camera.R;
 
 public class SelectImageView extends FrameLayout {
     private ImageView mIvPicture;
-    private CheckBox mCkSelectPicture;
+    //private CheckBox mCkSelectPicture; 多选按钮，方便将来扩展
     public SelectImageView(@NonNull Context context) {
         super(context);
         LayoutInflater.from(context).inflate(R.layout.image_select_item, this, true);
         mIvPicture = (ImageView)findViewById(R.id.ivPicture);
-        mCkSelectPicture = (CheckBox)findViewById(R.id.cbSelect);
+        //mCkSelectPicture = (CheckBox)findViewById(R.id.cbSelect);
     }
 
     public void setImage(@NonNull Bitmap bitmap){
+        //mBitmap = bitmap;
         mIvPicture.setImageBitmap(bitmap);
     }
+
+
 }
