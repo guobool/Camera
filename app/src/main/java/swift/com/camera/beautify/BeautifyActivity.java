@@ -37,9 +37,8 @@ public class BeautifyActivity extends AppCompatActivity implements BeautifyContr
                 .build()
                 .inject(this);
         if(mPictureBean != null){
-            int width = mIvBeautifyImage.getWidth();
-            int height = mIvBeautifyImage.getHeight();
-            Bitmap bitmap = mPresenter.getImage(mPictureBean.getmImagePath(), width, height);
+            //获取原图
+            Bitmap bitmap = mPresenter.getImage(mPictureBean.getmImagePath(), 0, 0);
             if(bitmap != null) {
                 mIvBeautifyImage.setImageBitmap(bitmap);
             }

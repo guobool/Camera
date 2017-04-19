@@ -2,7 +2,7 @@ package swift.com.camera.processing;
 
 import dagger.Component;
 import swift.com.camera.data.PictureRepositoryComponent;
-import swift.com.camera.util.ActivityScoped;
+import swift.com.camera.utils.ActivityScoped;
 
 /**
  * Created by bool on 17-4-13.

@@ -1,4 +1,4 @@
-package swift.com.camera.util;
+package swift.com.camera.utils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
