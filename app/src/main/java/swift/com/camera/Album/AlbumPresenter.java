@@ -3,6 +3,7 @@ package swift.com.camera.Album;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+
 import java.util.List;
 
 import javax.inject.Inject;
@@ -11,6 +12,8 @@ import swift.com.camera.beautify.BeautifyActivity;
 import swift.com.camera.data.PictureBean;
 import swift.com.camera.data.PictureRepository;
 
+import static swift.com.camera.data.PictureDataSource.*;
+
 /**
  * Created by bool on 17-4-14.
  */
@@ -18,7 +21,7 @@ import swift.com.camera.data.PictureRepository;
 class AlbumPresenter implements AlbumContract.Presenter {
     private PictureRepository mPictureReposotory;
     private AlbumContract.View mAlbumView;
-    private List<PictureBean> mImages;
+    private List<PictureBean> mImagesBean;
     @Inject
     public AlbumPresenter(PictureRepository repository, AlbumContract.View albumView){
         mPictureReposotory = repository;
@@ -33,12 +36,23 @@ class AlbumPresenter implements AlbumContract.Presenter {
         mAlbumView.setPresenter(this);
     }
 
-    public Bitmap getBitMap(String imageName, int width, int height) {
-        return mPictureReposotory.getAdapterImage(imageName, width, height);
+    @Override
+    public void getBitMap(String imageName, int width, int height) {
+        mPictureReposotory.getAdapterImage(new GetPictureCallBack() {
+            @Override
+            public void onPictureGeted(Bitmap picture) {
+                mAlbumView.pictureGeted(picture);
+            }
+
+            @Override
+            public void onGetFailed() {
+
+            }
+        }, imageName, width, height);
     }
 
     public List<PictureBean> getImages() {
-        return mImages;
+        return mImagesBean;
     }
 
     @Override
@@ -52,8 +66,20 @@ class AlbumPresenter implements AlbumContract.Presenter {
     }
 
     @Override
-    public List<PictureBean> getImagesList() {
-        return mPictureReposotory.getPicture();
+    public void getImagesList() {
+        mPictureReposotory.loadPicture(new LoadPictureCallBack() {
+            @Override
+            public void onPictureLoaded(List<PictureBean> pictureBeanList) {
+                if(pictureBeanList != null){
+                    mAlbumView.pictureBeanLoaded(pictureBeanList);
+                }
+            }
+
+            @Override
+            public void onLoadFailed() {
+
+            }
+        });
     }
 
     @Override

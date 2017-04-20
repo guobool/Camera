@@ -38,15 +38,19 @@ public class BeautifyActivity extends AppCompatActivity implements BeautifyContr
                 .inject(this);
         if(mPictureBean != null){
             //获取原图
-            Bitmap bitmap = mPresenter.getImage(mPictureBean.getmImagePath(), 0, 0);
-            if(bitmap != null) {
-                mIvBeautifyImage.setImageBitmap(bitmap);
-            }
+            mPresenter.getImage(mPictureBean.getmImagePath(), 0, 0);
         }
     }
 
     @Override
     public void setPresenter(@NonNull BeautifyContract.Presenter presenter) {
         mPresenter = (BeautifyPresenter)checkNotNull(presenter);
+    }
+
+    @Override
+    public void showImage(Bitmap picture) {
+        if(picture != null) {
+            mIvBeautifyImage.setImageBitmap(picture);
+        }
     }
 }

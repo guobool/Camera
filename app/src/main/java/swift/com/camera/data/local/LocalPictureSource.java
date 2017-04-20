@@ -5,16 +5,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
+import android.os.Handler;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.util.LruCache;
-
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -50,23 +48,31 @@ public class LocalPictureSource implements PictureDataSource {
 
 
     @Override
-    public ArrayList<PictureBean> getPicture(){
-        Uri mImageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        ContentResolver mContentReslver = mContext.getContentResolver();
-        Cursor mCursor = mContentReslver.query(mImageUri, null,
-                MediaStore.Images.Media.MIME_TYPE + "=? or " + MediaStore.Images.Media.MIME_TYPE + "=?",
-                new String[] { "image/jpeg", "image/png" }, MediaStore.Images.Media.DATE_MODIFIED);
-        if(mCursor != null){
-            PictureBean mPicture;
-            while(mCursor.moveToNext()){
-                // 获取图片路径
-                String path = mCursor.getString(mCursor.getColumnIndex(MediaStore.Images.Media.DATA));
-                mPicture = new PictureBean(path);
-                mPictureList.add(mPicture);
+    public void loadPicture(@NonNull final LoadPictureCallBack loadCallBack){
+
+        Handler handler = new Handler();
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                ContentResolver mContentReslver = mContext.getContentResolver();
+                Cursor mCursor = mContentReslver.query(LOCAL_IMAGE_URI, null, LOCAL_QUERY_CRITERIA,
+                        LOCAL_QUERY_VALUE, LOCAL_QUERY_ATTR);
+                if(mCursor != null){
+                    PictureBean mPicture;
+                    while(mCursor.moveToNext()){
+                        // 获取图片路径
+                        String path = mCursor.getString(mCursor.getColumnIndex(MediaStore.Images.Media.DATA));
+                        mPicture = new PictureBean(path);
+                        mPictureList.add(mPicture);
+                    }
+                    mCursor.close();
+                }
+                if(mPictureList.size() != 0) {
+                    loadCallBack.onPictureLoaded(mPictureList);
+                }
             }
-            mCursor.close();
-        }
-        return mPictureList;
+        });
+
     }
 
     /**
@@ -75,18 +81,45 @@ public class LocalPictureSource implements PictureDataSource {
      * @param height 图片的高度
      * @return Bitmap对象
      * 当width或这height不给时，则保持原图大小
+     *
+     *
+     * *注意：LoaclPictureSource负责本地资源的加载，RemotePictureSource负责远程的数据加载。
+     * PictureRepository则是对两种存取方式的再次封装，使上层不用关心数据的存取方式。
+     *
+     * 之所以在PictureRepository和LoaclPictureSource中的函数都要传入LoadPictureCallBack对象，
+     * 这是由于两层共同使用同一接口PictureDataSource造成的。如果不使用同一接口，可以只在PictureRepository
+     * 中完成回调即可。异步处理也需要放到PictureRepository中，底层只需要完成这存取返回即可。这样使处理的使传递
+     * 的参数明显减少，回到的层级变少。
+     *
+     * 之所以三个类使用同一接口，可能是为了减少接口的数量和定义，同时在上层需要明确从某处加载时，可以直接使用该类，而不需
+     * 要改动调用接口和处理过程。不过这可以通过传递标志值来弥补。因为既然结构已经定义好之后，各层之间的调用是不能随便越级
+     * 的，论乱的调用只会使程序无法维护。
+     *
+     * 又或者，这只是个人习惯的一种选择，毕竟，程序只是思想的表达而已。也只有todo-mvp的构建者才知道自己当初为什么这样抽取
+     * 接口了。个人所思，略作参考：)
      */
     @Override
-    public Bitmap getAdapterImage(final String pathName, final int width, final int height){
-        Bitmap bitmap = mMemoryCache.get(pathName);
+    public void getAdapterImage(@NonNull final GetPictureCallBack getCallBack,
+                                final String pathName, final int width, final int height){
+        Handler handler = new Handler();
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Bitmap bitmap = mMemoryCache.get(pathName);
+                if(bitmap == null){
+                    //根据传入的宽高获取图片，对图片进行缩放
+                    bitmap = getBitmapFromFile(pathName, width , height);
+                    //将图片加入到内存缓存
+                    addBitmapToMemoryCache(pathName, bitmap);
+                    if(bitmap != null){
+                        getCallBack.onPictureGeted(bitmap);
+                    }else{
+                        getCallBack.onGetFailed();
+                    }
 
-        if(bitmap == null){
-            //根据传入的宽高获取图片，对图片进行了缩放
-            bitmap = getBitmapFromFile(pathName, width , height);
-            //将图片加入到内存缓存
-            addBitmapToMemoryCache(pathName, bitmap);
-        }
-        return bitmap;
+                }
+            }
+        });
     }
 
 
@@ -183,6 +216,4 @@ public class LocalPictureSource implements PictureDataSource {
             return upperBound;
         }
     }
-
-
 }

@@ -8,6 +8,7 @@ import javax.inject.Inject;
 
 import swift.com.camera.Album.AlbumContract;
 import swift.com.camera.data.PictureBean;
+import swift.com.camera.data.PictureDataSource;
 import swift.com.camera.data.PictureRepository;
 
 /**
@@ -30,7 +31,18 @@ public class BeautifyPresenter implements BeautifyContract.Presenter{
     }
 
     @Override
-    public Bitmap getImage(String pathName, int width, int height) {
-        return mPictureReposotory.getAdapterImage(pathName, width, height);
+    public void getImage(String pathName, int width, int height) {
+        mPictureReposotory.getAdapterImage(new PictureDataSource.GetPictureCallBack(){
+
+            @Override
+            public void onPictureGeted(Bitmap picture) {
+                mBeautifyView.showImage(picture);
+            }
+
+            @Override
+            public void onGetFailed() {
+
+            }
+        },pathName, width, height);
     }
 }

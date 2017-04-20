@@ -9,9 +9,13 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.LinearLayout;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -30,9 +34,10 @@ import static dagger.internal.Preconditions.checkNotNull;
 
 public class AlbumActivity extends AppCompatActivity implements AlbumContract.View {
     @Inject AlbumPresenter mPresenter;
-    List<PictureBean> mImageList;
-    RecyclerView mRvPhotoList;
-    FloatingActionButton mFabComplateSelect;
+    private List<PictureBean> mImageList;
+    private RecyclerView mRvPhotoList;
+    private AlbumRecycleViewAdapter mRecycleAdaptere;
+
     @Override
     protected void onCreate(final Bundle savedInstancesStace){
         super.onCreate(savedInstancesStace);
@@ -54,30 +59,28 @@ public class AlbumActivity extends AppCompatActivity implements AlbumContract.Vi
                 mPresenter.toProcessingActivity();
             }
         });
+
         // 注入AlbumPresenter对象
         DaggerAlbumComponent.builder()
                 .pictureRepositoryComponent(((TheApplication)getApplication()).getTasksRepositoryComponent())
                 .albumPresenterModule(new AlbumPresenterModule(this))
                 .build()
                 .inject(this);
-        mImageList = mPresenter.getImagesList();
-
 
         //----------------------------RecycleView------------------------
         mRvPhotoList = (RecyclerView)findViewById(R.id.rvPhotoList);
         mRvPhotoList.setLayoutManager(new GridLayoutManager(this,3)); //每行3列
-        mRvPhotoList.setAdapter(new AlbumRecycleViewAdapter(AlbumActivity.this));
+        mRecycleAdaptere = new AlbumRecycleViewAdapter(new ArrayList<PictureBean>(0),
+                AlbumActivity.this);
+        mRvPhotoList.setAdapter(mRecycleAdaptere);
         mRvPhotoList.addItemDecoration(new DivideItemDecoration(this));
+        mPresenter.getImagesList();
     }
 
 
-    public Bitmap getImage(int position, int width, int height){
+    public void getImage(int position, int width, int height){
         PictureBean picture = (PictureBean)mImageList.get(position);
-        return mPresenter.getBitMap(picture.getmImagePath(), width, height);
-    }
-
-    public int getImageNum(){
-        return mImageList.size();
+        mPresenter.getBitMap(picture.getmImagePath(), width, height);
     }
 
     @Override
@@ -95,6 +98,17 @@ public class AlbumActivity extends AppCompatActivity implements AlbumContract.Vi
     public void toBeautifyActivity() {
         Intent intent = new Intent(this, BeautifyActivity.class);
         startActivity(intent);
+    }
+
+    @Override
+    public void pictureGeted(Bitmap picture) {
+        mRecycleAdaptere.onPictureLoaded(picture);
+    }
+
+    @Override
+    public void pictureBeanLoaded(List<PictureBean> pictureBeanList) {
+        mImageList = pictureBeanList;
+        mRecycleAdaptere.onDataChaged(mImageList);
     }
 
     public void onItemSelected(int index) {
