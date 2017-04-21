@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import java.util.List;
 import java.util.Map;
@@ -23,11 +24,10 @@ import static java.lang.System.in;
 public class AlbumRecycleViewAdapter extends RecyclerView.Adapter<
         AlbumRecycleViewAdapter.ImageViewHolder>{
     private AlbumActivity mContext;
-    private List<PictureBean> mPictureList;
-    private Map<Integer,Bitmap> mPictureMap;
+    private List<PictureBean> mPictureBeanList;
     public AlbumRecycleViewAdapter(List<PictureBean> list, Context context){
         super();
-        mPictureList = list;
+        mPictureBeanList = list;
         mContext = (AlbumActivity)context;
     }
     // 创建时用于创建组件,每次创建一个组件都会调用一次该方法。封装是内部实现了组件的重复利用，进行了优化
@@ -40,22 +40,20 @@ public class AlbumRecycleViewAdapter extends RecyclerView.Adapter<
     @Override
     public void onBindViewHolder(ImageViewHolder holder, int position) {
         // 根据显示的宽高获取相应尺寸的图片
-        mContext.getImage(position, holder.mSivItem.getWidth(), holder.mSivItem.getHeight());
+        mContext.setImage(mPictureBeanList.get(position).getmImagePath(),
+                holder.mSivItem.getWidth(), holder.mSivItem.getHeight(),
+                holder.mSivItem.getImageView());
 
-        mPictureMap.get(position);
         //holder.mSivItem.setImage(bitmap);
     }
 
     @Override
     public int getItemCount() {
-        return mPictureList.size();
+        return mPictureBeanList.size();
     }
 
     public void onDataChaged(List<PictureBean> mImageList) {
-        mPictureList = checkNotNull(mImageList);
-        for(int i= 0; i < mPictureList.size(); i++){
-            mPictureMap.put(i, null);
-        }
+        mPictureBeanList = checkNotNull(mImageList);
         notifyDataSetChanged();
     }
 
@@ -63,6 +61,8 @@ public class AlbumRecycleViewAdapter extends RecyclerView.Adapter<
         checkNotNull(picture);
         //createViewHolder().setIsRecyclable();
     }
+
+
 
     public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         SelectImageView mSivItem;

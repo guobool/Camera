@@ -12,7 +12,9 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import java.util.ArrayList;
@@ -75,12 +77,7 @@ public class AlbumActivity extends AppCompatActivity implements AlbumContract.Vi
         mRvPhotoList.setAdapter(mRecycleAdaptere);
         mRvPhotoList.addItemDecoration(new DivideItemDecoration(this));
         mPresenter.getImagesList();
-    }
-
-
-    public void getImage(int position, int width, int height){
-        PictureBean picture = (PictureBean)mImageList.get(position);
-        mPresenter.getBitMap(picture.getmImagePath(), width, height);
+        Log.e(this.getClass().getName(), "---------------");
     }
 
     @Override
@@ -94,21 +91,26 @@ public class AlbumActivity extends AppCompatActivity implements AlbumContract.Vi
         startActivity(intent);
     }
 
+
     @Override
-    public void toBeautifyActivity() {
+    public void toBeautifyActivity(PictureBean pictureBean) {
         Intent intent = new Intent(this, BeautifyActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("PictureBean",pictureBean);
+        intent.putExtras(bundle);
         startActivity(intent);
     }
 
-    @Override
-    public void pictureGeted(Bitmap picture) {
-        mRecycleAdaptere.onPictureLoaded(picture);
-    }
 
     @Override
     public void pictureBeanLoaded(List<PictureBean> pictureBeanList) {
         mImageList = pictureBeanList;
         mRecycleAdaptere.onDataChaged(mImageList);
+    }
+
+    @Override
+    public void setImage(String imageName, int width, int height, ImageView imageView) {
+        mPresenter.setBitMap(imageName, width, height, imageView);
     }
 
     public void onItemSelected(int index) {

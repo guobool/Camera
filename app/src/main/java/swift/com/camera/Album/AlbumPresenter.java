@@ -3,6 +3,7 @@ package swift.com.camera.Album;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.widget.ImageView;
 
 import java.util.List;
 
@@ -37,11 +38,11 @@ class AlbumPresenter implements AlbumContract.Presenter {
     }
 
     @Override
-    public void getBitMap(String imageName, int width, int height) {
+    public void setBitMap(final String imageName, int width, int height, final ImageView imageView) {
         mPictureReposotory.getAdapterImage(new GetPictureCallBack() {
             @Override
             public void onPictureGeted(Bitmap picture) {
-                mAlbumView.pictureGeted(picture);
+                imageView.setImageBitmap(picture);
             }
 
             @Override
@@ -61,8 +62,8 @@ class AlbumPresenter implements AlbumContract.Presenter {
     }
 
     @Override
-    public void toBeautifyActivity() {
-        mAlbumView.toBeautifyActivity();
+    public void toBeautifyActivity(PictureBean pictureBean) {
+        mAlbumView.toBeautifyActivity(pictureBean);
     }
 
     @Override

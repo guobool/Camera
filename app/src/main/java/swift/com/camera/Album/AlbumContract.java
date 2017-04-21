@@ -1,6 +1,7 @@
 package swift.com.camera.Album;
 
 import android.graphics.Bitmap;
+import android.widget.ImageView;
 
 import java.util.List;
 
@@ -17,23 +18,22 @@ public interface AlbumContract {
 
         void toProcessingActivity();
 
-        void toBeautifyActivity();
+        void toBeautifyActivity(PictureBean pictureBean);
 
         void pictureBeanLoaded(List<PictureBean> pictureBeanList);
 
-        void pictureGeted(Bitmap picture);
+        void setImage(String imageName, int width, int height, ImageView imageView);
     }
 
     interface Presenter {
-
-        void getBitMap(String imageName, int width, int height);
-
         void toProcessingActivity();
 
-        void toBeautifyActivity();
+        void toBeautifyActivity(PictureBean pictureBean);
 
         void getImagesList();
 
         void toBeaytifyActivity(PictureBean pictureBean);
+
+        void setBitMap(String imageName, int width, int height, ImageView imageView);
     }
 }

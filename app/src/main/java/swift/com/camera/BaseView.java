@@ -5,6 +5,7 @@ package swift.com.camera;
  */
 
 public interface BaseView<T> {
+    String TAG = null;
     void setPresenter(T presenter);
 
 }

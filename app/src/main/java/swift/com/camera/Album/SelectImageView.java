@@ -29,5 +29,7 @@ public class SelectImageView extends FrameLayout {
         mIvPicture.setImageBitmap(bitmap);
     }
 
-
+    public ImageView getImageView(){
+        return mIvPicture;
+    }
 }
