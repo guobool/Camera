@@ -35,7 +35,7 @@ public class DivideItemDecoration extends RecyclerView.ItemDecoration {
     @Override
     public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
         int spanCount = getSpanCount(parent);//列数
-        int itemCount = parent.getChildCount(); // 组件数
+        int itemCount = parent.getAdapter().getItemCount(); // 组件数
         int itemPosition = parent.getChildAdapterPosition(view);
         if (itemPosition > (itemCount - (itemCount % spanCount))) {
             // 如果是最后一行，则不需要需要绘制底部
