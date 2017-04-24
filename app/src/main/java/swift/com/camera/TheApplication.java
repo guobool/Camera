@@ -1,6 +1,7 @@
 package swift.com.camera;
 
 import android.app.Application;
+import android.content.Context;
 
 import com.squareup.leakcanary.LeakCanary;
 
@@ -12,7 +13,11 @@ import swift.com.camera.data.PictureRepositoryComponent;
  */
 
 public class TheApplication extends Application {
+
+    private static TheApplication sInstance;
+
     PictureRepositoryComponent mRepositoryComponent;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -30,5 +35,17 @@ public class TheApplication extends Application {
 
     public PictureRepositoryComponent getTasksRepositoryComponent() {
         return mRepositoryComponent;
+    }
+
+    public static TheApplication getInstance() {
+        return sInstance;
+    }
+
+    public TheApplication() {
+        sInstance = this;
+    }
+
+    public static Context getAppContext() {
+        return sInstance.getApplicationContext();
     }
 }

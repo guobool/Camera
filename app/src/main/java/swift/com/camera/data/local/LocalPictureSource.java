@@ -107,7 +107,7 @@ public class LocalPictureSource implements PictureDataSource {
      * @param viewWidth 图片宽度
      * @param viewHeight 图片高度
      */
-    private int computeScale(BitmapFactory.Options options, int viewWidth, int viewHeight){
+    public static int computeScale(BitmapFactory.Options options, int viewWidth, int viewHeight){
         int inSampleSize = 1;
         if(viewWidth == 0 || viewWidth == 0){
             return inSampleSize;
@@ -126,7 +126,7 @@ public class LocalPictureSource implements PictureDataSource {
         return inSampleSize;
     }
 
-    public Bitmap getBitmapFromFile(String pathName, int width, int height) {
+    public static Bitmap getBitmapFromFile(String pathName, int width, int height) {
         File dst = new File(pathName);
         if (null != dst && dst.exists()) {
             BitmapFactory.Options opts = null;
