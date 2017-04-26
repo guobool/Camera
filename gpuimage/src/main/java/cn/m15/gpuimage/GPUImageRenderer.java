@@ -104,6 +104,7 @@ public class GPUImageRenderer implements Renderer, PreviewCallback {
     public void onSurfaceChanged(final GL10 gl, final int width, final int height) {
         mOutputWidth = width;
         mOutputHeight = height;
+        mGLTextureId = -1;
         GLES20.glViewport(0, 0, width, height);
         GLES20.glUseProgram(mFilter.getProgram());
         mFilter.onOutputSizeChanged(width, height);
@@ -150,17 +151,20 @@ public class GPUImageRenderer implements Renderer, PreviewCallback {
         final Size previewSize = camera.getParameters().getPreviewSize();
         if (mGLRgbBuffer == null) {
             mGLRgbBuffer = IntBuffer.allocate(previewSize.width * previewSize.height);
+        } else if (mGLRgbBuffer.capacity() != previewSize.width * previewSize.height) {
+            mGLRgbBuffer = null;
+            mGLRgbBuffer = IntBuffer.allocate(previewSize.width * previewSize.height);
         }
         if (mRunOnDraw.isEmpty()) {
             runOnDraw(new Runnable() {
                 @Override
                 public void run() {
-                    GPUImageNativeLibrary.YUVtoRBGA(data, previewSize.width, previewSize.height,
+                    GPUImageNativeLibrary.YUVtoARGB(data, previewSize.width, previewSize.height,
                             mGLRgbBuffer.array());
                     mGLTextureId = OpenGlUtils.loadTexture(mGLRgbBuffer, previewSize, mGLTextureId);
                     camera.addCallbackBuffer(data);
 
-                    if (mImageWidth != previewSize.width) {
+                    if (mImageWidth != previewSize.width || mImageHeight != previewSize.height) {
                         mImageWidth = previewSize.width;
                         mImageHeight = previewSize.height;
                         adjustImageScaling();

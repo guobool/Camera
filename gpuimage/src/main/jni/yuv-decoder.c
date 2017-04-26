@@ -1,113 +1,21 @@
 #include <jni.h>
-#include <android/log.h>
+#include "libyuv/include/libyuv.h"
 
-JNIEXPORT void JNICALL Java_cn_m15_gpuimage_GPUImageNativeLibrary_YUVtoRBGA(JNIEnv * env, jobject obj, jbyteArray yuv420sp, jint width, jint height, jintArray rgbOut)
+JNIEXPORT void JNICALL Java_cn_m15_gpuimage_GPUImageNativeLibrary_YUVtoARGB(JNIEnv * env, jobject obj, jbyteArray yuv420sp, jint width, jint height, jintArray rgbOut)
 {
-    int             sz;
-    int             i;
-    int             j;
-    int             Y;
-    int             Cr = 0;
-    int             Cb = 0;
-    int             pixPtr = 0;
-    int             jDiv2 = 0;
-    int             R = 0;
-    int             G = 0;
-    int             B = 0;
-    int             cOff;
-    int w = width;
-    int h = height;
-    sz = w * h;
-
-    jint *rgbData = (jint*) ((*env)->GetPrimitiveArrayCritical(env, rgbOut, 0));
+    uint8_t *rgbData = (uint8_t *)((*env)->GetPrimitiveArrayCritical(env, rgbOut, 0));
     jbyte* yuv = (jbyte*) (*env)->GetPrimitiveArrayCritical(env, yuv420sp, 0);
 
-    for(j = 0; j < h; j++) {
-             pixPtr = j * w;
-             jDiv2 = j >> 1;
-             for(i = 0; i < w; i++) {
-                     Y = yuv[pixPtr];
-                     if(Y < 0) Y += 255;
-                     if((i & 0x1) != 1) {
-                             cOff = sz + jDiv2 * w + (i >> 1) * 2;
-                             Cb = yuv[cOff];
-                             if(Cb < 0) Cb += 127; else Cb -= 128;
-                             Cr = yuv[cOff + 1];
-                             if(Cr < 0) Cr += 127; else Cr -= 128;
-                     }
-                     
-                     //ITU-R BT.601 conversion
-                     //
-                     //R = 1.164*(Y-16) + 2.018*(Cr-128);
-                     //G = 1.164*(Y-16) - 0.813*(Cb-128) - 0.391*(Cr-128);
-                     //B = 1.164*(Y-16) + 1.596*(Cb-128);
-                     //
-                     Y = Y + (Y >> 3) + (Y >> 5) + (Y >> 7);
-                     R = Y + (Cr << 1) + (Cr >> 6);
-                     if(R < 0) R = 0; else if(R > 255) R = 255;
-                     G = Y - Cb + (Cb >> 3) + (Cb >> 4) - (Cr >> 1) + (Cr >> 3);
-                     if(G < 0) G = 0; else if(G > 255) G = 255;
-                     B = Y + Cb + (Cb >> 1) + (Cb >> 4) + (Cb >> 5);
-                     if(B < 0) B = 0; else if(B > 255) B = 255;
-                     rgbData[pixPtr++] = 0xff000000 + (R << 16) + (G << 8) + B;
-             }
-    }
+    const uint8* src_y = yuv;
+    int src_stride_y = width;
+    const uint8* src_vu = src_y + width * height;
+    int src_stride_vu = (width + 1) / 2 * 2;;
+    int dst_stride_argb = width * 4;
 
-    (*env)->ReleasePrimitiveArrayCritical(env, rgbOut, rgbData, 0);
-    (*env)->ReleasePrimitiveArrayCritical(env, yuv420sp, yuv, 0);
-}
-
-JNIEXPORT void JNICALL Java_cn_m15_gpuimage_GPUImageNativeLibrary_YUVtoARBG(JNIEnv * env, jobject obj, jbyteArray yuv420sp, jint width, jint height, jintArray rgbOut)
-{
-    int             sz;
-    int             i;
-    int             j;
-    int             Y;
-    int             Cr = 0;
-    int             Cb = 0;
-    int             pixPtr = 0;
-    int             jDiv2 = 0;
-    int             R = 0;
-    int             G = 0;
-    int             B = 0;
-    int             cOff;
-    int w = width;
-    int h = height;
-    sz = w * h;
-
-    jint *rgbData = (jint*) ((*env)->GetPrimitiveArrayCritical(env, rgbOut, 0));
-    jbyte* yuv = (jbyte*) (*env)->GetPrimitiveArrayCritical(env, yuv420sp, 0);
-
-    for(j = 0; j < h; j++) {
-             pixPtr = j * w;
-             jDiv2 = j >> 1;
-             for(i = 0; i < w; i++) {
-                     Y = yuv[pixPtr];
-                     if(Y < 0) Y += 255;
-                     if((i & 0x1) != 1) {
-                             cOff = sz + jDiv2 * w + (i >> 1) * 2;
-                             Cb = yuv[cOff];
-                             if(Cb < 0) Cb += 127; else Cb -= 128;
-                             Cr = yuv[cOff + 1];
-                             if(Cr < 0) Cr += 127; else Cr -= 128;
-                     }
-                     
-                     //ITU-R BT.601 conversion
-                     //
-                     //R = 1.164*(Y-16) + 2.018*(Cr-128);
-                     //G = 1.164*(Y-16) - 0.813*(Cb-128) - 0.391*(Cr-128);
-                     //B = 1.164*(Y-16) + 1.596*(Cb-128);
-                     //
-                     Y = Y + (Y >> 3) + (Y >> 5) + (Y >> 7);
-                     R = Y + (Cr << 1) + (Cr >> 6);
-                     if(R < 0) R = 0; else if(R > 255) R = 255;
-                     G = Y - Cb + (Cb >> 3) + (Cb >> 4) - (Cr >> 1) + (Cr >> 3);
-                     if(G < 0) G = 0; else if(G > 255) G = 255;
-                     B = Y + Cb + (Cb >> 1) + (Cb >> 4) + (Cb >> 5);
-                     if(B < 0) B = 0; else if(B > 255) B = 255;
-                     rgbData[pixPtr++] = 0xff000000 + (B << 16) + (G << 8) + R;
-             }
-    }
+    NV12ToARGB(src_y, src_stride_y,
+               src_vu, src_stride_vu,
+               rgbData, dst_stride_argb,
+               width, height); //不知道为什么用NV21toARGB不行，有空再研究
 
     (*env)->ReleasePrimitiveArrayCritical(env, rgbOut, rgbData, 0);
     (*env)->ReleasePrimitiveArrayCritical(env, yuv420sp, yuv, 0);

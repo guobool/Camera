@@ -590,6 +590,7 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
 
     private void releaseCamera() {
         if (mCameraInst != null) {
+            mCameraInst.stopPreview();
             mCameraInst.setPreviewCallback(null);
             mCameraInst.release();
             mCameraInst = null;
@@ -606,10 +607,9 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         if (mCameraInst != null) {
             try {
                 //mCameraInst.setPreviewDisplay(mCameraView.surfaceView().getHolder());
-
-                initCamera();
                 int orientation = mCameraHelper.getCameraDisplayOrientation((Activity) mContext, mCurrentCameraId);
                 mGPUImage.setUpCamera(mCameraInst, orientation, mCurrentCameraId == 0 ? false : true, false);
+                initCamera();
                 mCameraInst.startPreview();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -650,31 +650,16 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         try {
-            if (mCameraInst != null) {
-                mCameraInst.stopPreview();
-                mCameraInst.release();
-                mCameraInst = null;
-            }
+            releaseCamera();
         } catch (Exception e) {
             //相机已经关了
         }
-
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         if (null == mCameraInst) {
-            try {
-                mCameraInst = Camera.open();
-                //mCameraInst.setPreviewDisplay(holder);
-
-                initCamera();
-                int orientation = mCameraHelper.getCameraDisplayOrientation((Activity) mContext, mCurrentCameraId);
-                mGPUImage.setUpCamera(mCameraInst, orientation, mCurrentCameraId == 0 ? false : true, false);
-                mCameraInst.startPreview();
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
+            setUpCamera(mCurrentCameraId);
         }
     }
 

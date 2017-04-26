@@ -4,11 +4,9 @@ import android.graphics.Bitmap;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -179,7 +177,7 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
     }
 
     @Override
-    public SurfaceView surfaceView() {
+    public GLSurfaceView surfaceView() {
         GLSurfaceView view = (GLSurfaceView) findViewById(R.id.surfaceView);
         return view;
     }
@@ -210,7 +208,7 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
         surfaceView.setLayoutParams(lp);
 
         CameraGrid gridView = (CameraGrid) findViewById(R.id.masking);
-        lp = surfaceView.getLayoutParams();
+        lp = gridView.getLayoutParams();
         lp.width = realWidth;
         lp.height = realHeight;
         gridView.setLayoutParams(lp);

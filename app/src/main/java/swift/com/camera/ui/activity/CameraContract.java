@@ -11,7 +11,7 @@ import android.view.SurfaceView;
 public class CameraContract {
     // UI展示
     interface View {
-        SurfaceView surfaceView();
+        GLSurfaceView surfaceView();
         void setFlashViewResourceId(int resourceId);
         void updatePreviewRatio(float ratio);
         void setGLSurfaceViewRenderMode(int renderMode);
