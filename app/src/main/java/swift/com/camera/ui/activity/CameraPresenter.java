@@ -31,7 +31,7 @@ import java.util.List;
 import cn.m15.gpuimage.GPUImage;
 import cn.m15.gpuimage.GPUImageFilter;
 import swift.com.camera.utils.CameraHelper;
-import swift.com.camera.utils.GPUImageFilterTools;
+import swift.com.camera.utils.FilterHelper;
 
 import swift.com.camera.R;
 import swift.com.camera.utils.ScreenUtils;
@@ -47,7 +47,6 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
 
     private GPUImage mGPUImage;
     private GPUImageFilter mFilter;
-    private GPUImageFilterTools.FilterAdjuster mFilterAdjuster;
 
     private CameraHelper mCameraHelper;
 
@@ -66,6 +65,10 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         mContext = (Context) cameraView;
 
         mGPUImage = new GPUImage(mContext);
+        GPUImageFilter f = FilterHelper.filter(null);
+        if (f != null) {
+            mGPUImage.setFilter(f);
+        }
 
         mCameraHelper = new CameraHelper(mContext);
     }
@@ -110,13 +113,7 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
 
     @Override
     public void chooseFilter() {
-        GPUImageFilterTools.showDialog(mContext, new GPUImageFilterTools.OnGpuImageFilterChosenListener() {
-
-            @Override
-            public void onGpuImageFilterChosenListener(final GPUImageFilter filter) {
-                switchFilterTo(filter);
-            }
-        });
+        //switchFilterTo(filter);
     }
 
     @Override
@@ -179,7 +176,6 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
                 || (filter != null && !mFilter.getClass().equals(filter.getClass()))) {
             mFilter = filter;
             mGPUImage.setFilter(mFilter);
-            mFilterAdjuster = new GPUImageFilterTools.FilterAdjuster(mFilter);
         }
     }
 
@@ -320,8 +316,12 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         setDispaly(mParameters, mCameraInst);
 
         if (mCurrentCameraId == 0) {
-            mParameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-            mCameraView.setFlashViewResourceId(R.mipmap.camera_flash_off);
+            if (canSwitchFlashMode()) {
+                mParameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                mCameraView.setFlashViewResourceId(R.mipmap.camera_flash_off);
+            } else {
+                mCameraView.setFlashViewResourceId(-1);
+            }
         } else {
             mCameraView.setFlashViewResourceId(R.mipmap.camera_light_off);
         }

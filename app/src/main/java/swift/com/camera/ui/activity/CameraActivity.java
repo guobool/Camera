@@ -1,10 +1,14 @@
 package swift.com.camera.ui.activity;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.graphics.Bitmap;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
@@ -12,9 +16,11 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.ScaleAnimation;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import swift.com.camera.R;
+import swift.com.camera.adapter.FilterAdapter;
 import swift.com.camera.ui.view.CameraGrid;
 import swift.com.camera.utils.ScreenUtils;
 
@@ -33,6 +39,10 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
     private float mDist;
     private Handler mHandler = new Handler();
     private float mScreenBrightness;
+
+    private LinearLayout mFilterLayout;
+    private RecyclerView mFilterListView;
+    private FilterAdapter mFilterAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +73,16 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
         surfaceView.setFocusable(true);
         surfaceView.setBackgroundColor(TRIM_MEMORY_BACKGROUND);
         surfaceView.getHolder().addCallback((SurfaceHolder.Callback)mCameraPresenter);
+
+        mFilterLayout = (LinearLayout)findViewById(R.id.layout_filter);
+        mFilterListView = (RecyclerView) findViewById(R.id.filter_listView);
+        mFilterAdapter = new FilterAdapter(this);
+        mFilterListView.setAdapter(mFilterAdapter);
+        mFilterAdapter.setOnFilterChangeListener(onFilterChangeListener);
+
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        mFilterListView.setLayoutManager(linearLayoutManager);
 
         findViewById(R.id.goBack).setOnClickListener(this);
         findViewById(R.id.switchCamera).setOnClickListener(this);
@@ -147,9 +167,21 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
 
         View cameraSwitchView = findViewById(R.id.switchCamera);
         if (!mCameraPresenter.canSwitchCamera()) {
-            cameraSwitchView.setVisibility(View.GONE);
+            cameraSwitchView.setVisibility(View.INVISIBLE);
+        }
+
+        View flashSwitchView = findViewById(R.id.flashMode);
+        if (!mCameraPresenter.canSwitchFlashMode()) {
+            flashSwitchView.setVisibility(View.INVISIBLE);
         }
     }
+
+    private FilterAdapter.onFilterChangeListener onFilterChangeListener = new FilterAdapter.onFilterChangeListener(){
+        @Override
+        public void onFilterChanged(String filterId) {
+
+        }
+    };
 
     @Override
     public void onClick(final View v) {
@@ -168,6 +200,7 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
 
             case R.id.filter:
                 mCameraPresenter.chooseFilter();
+                showFilters();
                 break;
 
             case R.id.goBack:
@@ -185,7 +218,12 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
     @Override
     public void setFlashViewResourceId(int resourceId) {
         ImageView v = (ImageView) findViewById(R.id.flashMode);
-        v.setImageResource(resourceId);
+        if (resourceId == -1) {
+            v.setVisibility(View.INVISIBLE);
+        } else {
+            v.setImageResource(resourceId);
+            v.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -231,5 +269,64 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
             setFlashViewResourceId(R.mipmap.camera_light_on);
         }
         getWindow().setAttributes(lp);
+    }
+
+    private void showFilters(){
+        ObjectAnimator animator = ObjectAnimator.ofFloat(mFilterLayout, "translationY", mFilterLayout.getHeight(), 0);
+        animator.setDuration(200);
+        animator.addListener(new Animator.AnimatorListener() {
+
+            @Override
+            public void onAnimationStart(Animator animation) {
+                findViewById(R.id.capture).setClickable(false);
+                mFilterLayout.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+        });
+        animator.start();
+    }
+
+    private void hideFilters(){
+        ObjectAnimator animator = ObjectAnimator.ofFloat(mFilterLayout, "translationY", 0 ,  mFilterLayout.getHeight());
+        animator.setDuration(200);
+        animator.addListener(new Animator.AnimatorListener() {
+
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mFilterLayout.setVisibility(View.INVISIBLE);
+                findViewById(R.id.capture).setClickable(true);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                mFilterLayout.setVisibility(View.INVISIBLE);
+                findViewById(R.id.capture).setClickable(true);
+            }
+        });
+        animator.start();
     }
 }

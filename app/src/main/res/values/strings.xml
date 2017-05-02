@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Camera</string>
+    <string name="app_name">Swift Camera</string>
     <string name="but_name">图片</string>
     <string name="textview">TextView</string>
     <string name="func_bkg">功能按钮背景图片</string>

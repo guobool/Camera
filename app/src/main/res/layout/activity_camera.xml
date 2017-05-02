@@ -99,6 +99,15 @@
             android:background="@drawable/btn_take_photo" />
     </RelativeLayout>
 
+    <include
+        android:id="@+id/layout_filter"
+        layout="@layout/filter_layout"
+        android:visibility="invisible"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom"/>
+
     <swift.com.camera.ui.view.CameraGrid
         android:id="@+id/masking"
         android:layout_width="match_parent"
