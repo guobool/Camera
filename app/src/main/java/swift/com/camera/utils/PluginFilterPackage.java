@@ -1,5 +1,6 @@
 package swift.com.camera.utils;
 
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.res.AssetManager;
@@ -67,8 +68,8 @@ public class PluginFilterPackage {
         try {
             final Class<Object> classToLoad = (Class<Object>) mClassLoader.loadClass(mPackageName + ".GPUImagePluginFilter");
             final Object myInstance  = classToLoad.newInstance();
-            final Method doSomething = classToLoad.getMethod("pluginFilter");
-            GPUImageFilter filter = (GPUImageFilter) doSomething.invoke(myInstance);
+            final Method doSomething = classToLoad.getMethod("pluginFilter", new Class[]{Context.class, AssetManager.class, Resources.class});
+            GPUImageFilter filter = (GPUImageFilter) doSomething.invoke(myInstance, TheApplication.getAppContext(), mAssetManager, mResources);
             return filter;
         } catch (Exception e) {
             e.printStackTrace();
