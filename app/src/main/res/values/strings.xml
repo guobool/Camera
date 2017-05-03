@@ -18,4 +18,5 @@
     <string name="mosaic">马赛克</string>
     <string name="sticker">贴纸</string>
     <string name="cosmetology">美容</string>
+    <string name="no_filter">原始</string>
 </resources>

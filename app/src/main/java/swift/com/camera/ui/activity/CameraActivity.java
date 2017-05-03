@@ -89,6 +89,7 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
         findViewById(R.id.flashMode).setOnClickListener(this);
         findViewById(R.id.capture).setOnClickListener(this);
         findViewById(R.id.filter).setOnClickListener(this);
+        findViewById(R.id.btn_camera_closefilter).setOnClickListener(this);
 
         ImageView galleyView = (ImageView) findViewById(R.id.galley);
         galleyView.setOnClickListener(this);
@@ -179,7 +180,7 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
     private FilterAdapter.onFilterChangeListener onFilterChangeListener = new FilterAdapter.onFilterChangeListener(){
         @Override
         public void onFilterChanged(String filterId) {
-
+            mCameraPresenter.chooseFilter(filterId);
         }
     };
 
@@ -199,12 +200,15 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
                 break;
 
             case R.id.filter:
-                mCameraPresenter.chooseFilter();
                 showFilters();
                 break;
 
             case R.id.goBack:
                 finish();
+                break;
+
+            case R.id.btn_camera_closefilter:
+                hideFilters();
                 break;
         }
     }

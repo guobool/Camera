@@ -31,9 +31,10 @@ import java.util.List;
 import cn.m15.gpuimage.GPUImage;
 import cn.m15.gpuimage.GPUImageFilter;
 import swift.com.camera.utils.CameraHelper;
-import swift.com.camera.utils.FilterHelper;
+import swift.com.camera.utils.PluginFilterHelper;
 
 import swift.com.camera.R;
+import swift.com.camera.utils.PluginFilterPackage;
 import swift.com.camera.utils.ScreenUtils;
 
 /**
@@ -63,13 +64,7 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         mCameraView = cameraView;
         mCameraSupport = cameraSupport;
         mContext = (Context) cameraView;
-
         mGPUImage = new GPUImage(mContext);
-        GPUImageFilter f = FilterHelper.filter(null);
-        if (f != null) {
-            mGPUImage.setFilter(f);
-        }
-
         mCameraHelper = new CameraHelper(mContext);
     }
 
@@ -112,8 +107,18 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
     }
 
     @Override
-    public void chooseFilter() {
-        //switchFilterTo(filter);
+    public void chooseFilter(String filterId) {
+        if (filterId.length() == 0) {
+            switchFilterTo(new GPUImageFilter());
+        } else {
+            PluginFilterPackage p = PluginFilterHelper.getInstance(mContext).getPackage(filterId);
+            if (p != null) {
+                GPUImageFilter f = p.getFilter();
+                if (f != null) {
+                    switchFilterTo(f);
+                }
+            }
+        }
     }
 
     @Override

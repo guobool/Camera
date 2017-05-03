@@ -25,7 +25,7 @@ public class CameraContract {
         void switchCamera();
         boolean canSwitchFlashMode();
         void switchFlashMode();
-        void chooseFilter();
+        void chooseFilter(String filterId);
         void takePhoto();
         void addZoomIn(int delta);
         void pointFocus(int x, int y);
