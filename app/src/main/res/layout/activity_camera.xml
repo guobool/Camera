@@ -123,4 +123,14 @@
         android:background="@drawable/cam_focus"
         android:visibility="invisible" />
 
+    <SeekBar
+        android:id="@+id/zoomBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/layout_filter"
+        android:alpha="0"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="15dp" />
+
 </RelativeLayout>

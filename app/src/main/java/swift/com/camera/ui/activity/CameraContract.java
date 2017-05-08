@@ -2,6 +2,7 @@ package swift.com.camera.ui.activity;
 
 import android.graphics.Bitmap;
 import android.opengl.GLSurfaceView;
+import android.view.OrientationEventListener;
 import android.view.SurfaceView;
 
 /**
@@ -14,7 +15,9 @@ public class CameraContract {
         GLSurfaceView surfaceView();
         void setFlashViewResourceId(int resourceId);
         void updatePreviewRatio(float ratio);
+        void updateZoom(int currentZoom, int maxZoom);
         void setGLSurfaceViewRenderMode(int renderMode);
+        void updateLastPhoto();
         void toggleScreenBrightness();
     }
 
@@ -27,8 +30,10 @@ public class CameraContract {
         void switchFlashMode();
         void chooseFilter(String filterId);
         void takePhoto();
-        void addZoomIn(int delta);
+        boolean canZoom();
+        void updateZoom(int zoom);
         void pointFocus(int x, int y);
+        OrientationEventListener getOrientationEventListener();
     }
 
     // 数据存储

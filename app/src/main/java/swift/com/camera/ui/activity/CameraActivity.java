@@ -14,10 +14,13 @@ import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 
 import swift.com.camera.R;
 import swift.com.camera.adapter.FilterAdapter;
@@ -33,11 +36,8 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
     private CameraContract.Support mCameraSupport;
 
     private float mFocusPointX, mFocusPointY;
-    static final int FOCUS = 1;            // 聚焦
-    static final int ZOOM = 2;            // 缩放
-    private int mMode;                      //0是聚焦 1是放大
-    private float mDist;
-    private Handler mHandler = new Handler();
+    private Handler mFocusHandler = new Handler();
+    private Handler mZoomHandler = new Handler();
     private float mScreenBrightness;
 
     private LinearLayout mFilterLayout;
@@ -57,11 +57,22 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
     @Override
     protected void onResume() {
         super.onResume();
+        if (mCameraPresenter.getOrientationEventListener() != null) {
+            mCameraPresenter.getOrientationEventListener().enable();
+        }
         WindowManager.LayoutParams lp = getWindow().getAttributes();
         mScreenBrightness = lp.screenBrightness;
         if (mScreenBrightness == 1f) {
             mScreenBrightness = 254f / 255f;
         }
+    }
+
+    @Override
+    protected void onPause() {
+        if (mCameraPresenter.getOrientationEventListener() != null) {
+            mCameraPresenter.getOrientationEventListener().disable();
+        }
+        super.onPause();
     }
 
     private void initView() {
@@ -93,47 +104,35 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
 
         ImageView galleyView = (ImageView) findViewById(R.id.galley);
         galleyView.setOnClickListener(this);
-        Bitmap lastPhoto = mCameraSupport.getLastPhoto();
-        if (lastPhoto != null) {
-            galleyView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            galleyView.setImageBitmap(lastPhoto);
-        }
+        updateLastPhoto();
+
+        final SeekBar zoomBar = (SeekBar) findViewById(R.id.zoomBar);
+        zoomBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                mCameraPresenter.updateZoom(i);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                mZoomHandler.removeCallbacksAndMessages(null);
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                hideZoomBarDelayed();
+            }
+        });
 
         surfaceView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                    // 主点按下
                     case MotionEvent.ACTION_DOWN:
                         mFocusPointX = event.getX();
                         mFocusPointY = event.getY();
-                        mMode = FOCUS;
                         break;
-                    // 副点按下
-                    case MotionEvent.ACTION_POINTER_DOWN:
-                        mDist = ScreenUtils.spacing(event);
-                        // 如果连续两点距离大于10，则判定为多点模式
-                        if (ScreenUtils.spacing(event) > 10f) {
-                            mMode = ZOOM;
-                        }
-                        break;
-                    case MotionEvent.ACTION_UP:
-                    case MotionEvent.ACTION_POINTER_UP:
-                        mMode = FOCUS;
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        if (mMode == FOCUS) {
-                            //pointFocus((int) event.getRawX(), (int) event.getRawY());
-                        } else if (mMode == ZOOM) {
-                            float newDist = ScreenUtils.spacing(event);
-                            if (newDist > 10f) {
-                                float tScale = (newDist - mDist) / mDist;
-                                if (tScale < 0) {
-                                    tScale = tScale * 10;
-                                }
-                                mCameraPresenter.addZoomIn((int) tScale);
-                            }
-                        }
+                    default:
                         break;
                 }
                 return false;
@@ -157,12 +156,17 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
                         ScaleAnimation.RELATIVE_TO_SELF, 0.5f, ScaleAnimation.RELATIVE_TO_SELF, 0.5f);
                 sa.setDuration(800);
                 focusIndex.startAnimation(sa);
-                mHandler.postDelayed(new Runnable() {
+                mFocusHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         focusIndex.setVisibility(View.INVISIBLE);
                     }
                 }, 800);
+
+                if (mCameraPresenter.canZoom()) {
+                    zoomBar.setAlpha(1.0f);
+                    hideZoomBarDelayed();
+                }
             }
         });
 
@@ -175,6 +179,34 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
         if (!mCameraPresenter.canSwitchFlashMode()) {
             flashSwitchView.setVisibility(View.INVISIBLE);
         }
+    }
+
+    private void hideZoomBarDelayed() {
+        mZoomHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                final SeekBar zoomBar = (SeekBar) findViewById(R.id.zoomBar);
+                AlphaAnimation aa = new AlphaAnimation(1.0f, 0.0f);
+                aa.setDuration(500);
+                aa.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        zoomBar.setAlpha(0.0f);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+                zoomBar.startAnimation(aa);
+            }
+        }, 2000);
     }
 
     private FilterAdapter.onFilterChangeListener onFilterChangeListener = new FilterAdapter.onFilterChangeListener(){
@@ -263,6 +295,13 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
     }
 
     @Override
+    public void updateZoom(int currentZoom, int maxZoom) {
+        SeekBar zoomBar = (SeekBar) findViewById(R.id.zoomBar);
+        zoomBar.setMax(maxZoom);
+        zoomBar.setProgress(currentZoom);
+    }
+
+    @Override
     public void toggleScreenBrightness() {
         WindowManager.LayoutParams lp = getWindow().getAttributes();
         if (lp.screenBrightness == 1f) {
@@ -273,6 +312,16 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
             setFlashViewResourceId(R.mipmap.camera_light_on);
         }
         getWindow().setAttributes(lp);
+    }
+
+    @Override
+    public void updateLastPhoto() {
+        ImageView galleyView = (ImageView) findViewById(R.id.galley);
+        Bitmap lastPhoto = mCameraSupport.getLastPhoto();
+        if (lastPhoto != null) {
+            galleyView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            galleyView.setImageBitmap(lastPhoto);
+        }
     }
 
     private void showFilters(){

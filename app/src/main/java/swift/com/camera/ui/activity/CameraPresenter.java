@@ -13,13 +13,11 @@ import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
+import android.view.OrientationEventListener;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,10 +28,9 @@ import java.util.List;
 
 import cn.m15.gpuimage.GPUImage;
 import cn.m15.gpuimage.GPUImageFilter;
+import swift.com.camera.R;
 import swift.com.camera.utils.CameraHelper;
 import swift.com.camera.utils.PluginFilterHelper;
-
-import swift.com.camera.R;
 import swift.com.camera.utils.PluginFilterPackage;
 import swift.com.camera.utils.ScreenUtils;
 
@@ -45,6 +42,8 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
     private final CameraContract.View mCameraView;
     private final CameraContract.Support mCameraSupport;
     private final Context mContext;
+
+    private OrientationEventListener mOrientationListener;
 
     private GPUImage mGPUImage;
     private GPUImageFilter mFilter;
@@ -59,6 +58,7 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
     private int mCurrentCameraId = 0;  //1是前置 0是后置
     //放大缩小
     private int mCurZoomValue = 0;
+    private int mCurOrientation = 0;
 
     public CameraPresenter(CameraContract.View cameraView, CameraContract.Support cameraSupport) {
         mCameraView = cameraView;
@@ -66,6 +66,23 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         mContext = (Context) cameraView;
         mGPUImage = new GPUImage(mContext);
         mCameraHelper = new CameraHelper(mContext);
+        mOrientationListener = new OrientationEventListener(mContext) {
+            @Override
+            public void onOrientationChanged(int i) {
+                int rotation = 0;
+                if (i > 325 || i <= 45) {
+                    rotation = 90;
+                } else if (i > 45 && i <= 135) {
+                    rotation = 180;
+                } else if (i > 135 && i < 225) {
+                    rotation = 270;
+                }
+
+                if (rotation != mCurOrientation) {
+                    mCurOrientation = rotation;
+                }
+            }
+        };
     }
 
     @Override
@@ -81,6 +98,9 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         mCurrentCameraId = (mCurrentCameraId + 1) % mCameraHelper.getNumberOfCameras();
         releaseCamera();
         setUpCamera(mCurrentCameraId);
+        if (canZoom()) {
+            mCameraView.updateZoom(currentZoom(), maxZoom());
+        }
     }
 
     @Override
@@ -94,10 +114,10 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
 
     @Override
     public void switchFlashMode() {
-        if (mCurrentCameraId == 0) {
-            turnFlash(mCameraInst);
-        } else {
+        if (isFrontCamera()) {
             turnLight(mCameraInst);
+        } else {
+            turnFlash(mCameraInst);
         }
     }
 
@@ -138,14 +158,37 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
     }
 
     @Override
-    public void addZoomIn(int delta) {
+    public boolean canZoom() {
+        Camera.Parameters params = mCameraInst.getParameters();
+        return params.isZoomSupported() && params.getMaxZoom() > 0;
+    }
+
+    public int maxZoom() {
+        if (canZoom()) {
+            Camera.Parameters params = mCameraInst.getParameters();
+            return params.getMaxZoom();
+        } else {
+            return 0;
+        }
+    }
+
+    public int currentZoom() {
+        if (canZoom()) {
+            Camera.Parameters params = mCameraInst.getParameters();
+            return params.getZoom();
+        } else {
+            return 0;
+        }
+    }
+
+    @Override
+    public void updateZoom(int zoom) {
         try {
             Camera.Parameters params = mCameraInst.getParameters();
-            Log.d("Camera", "Is support Zoom " + params.isZoomSupported());
-            if (!params.isZoomSupported()) {
+            if (!params.isZoomSupported() || params.getMaxZoom() == 0) {
                 return;
             }
-            mCurZoomValue += delta;
+            mCurZoomValue = zoom;
             if (mCurZoomValue < 0) {
                 mCurZoomValue = 0;
             } else if (mCurZoomValue > params.getMaxZoom()) {
@@ -169,9 +212,7 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
     public void pointFocus(int x, int y) {
         mCameraInst.cancelAutoFocus();
         mParameters = mCameraInst.getParameters();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            showPoint(x, y);
-        }
+        showPoint(x, y);
         mCameraInst.setParameters(mParameters);
         autoFocus();
     }
@@ -184,14 +225,24 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         }
     }
 
+    private boolean isFrontCamera() {
+        Camera.CameraInfo info = new Camera.CameraInfo();
+        android.hardware.Camera.getCameraInfo(mCurrentCameraId, info);
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            return true;
+        }
+        return false;
+    }
+
     private void takePicture() {
         // TODO get a size that is about the size of the screen
         Camera.Parameters params = mCameraInst.getParameters();
-        params.setRotation(90);
-        mCameraInst.setParameters(params);
-        for (Camera.Size size : params.getSupportedPictureSizes()) {
-            Log.i("SwiftCamera", "Supported: " + size.width + "x" + size.height);
+        int rotation = mCurOrientation;
+        if (isFrontCamera()) {
+            rotation = (360 - rotation) % 360;
         }
+        params.setRotation(rotation);
+        mCameraInst.setParameters(params);
         mCameraInst.takePicture(null, null,
                 new Camera.PictureCallback() {
 
@@ -204,21 +255,9 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
                             return;
                         }
 
-                        try {
-                            FileOutputStream fos = new FileOutputStream(pictureFile);
-                            fos.write(data);
-                            fos.close();
-                        } catch (FileNotFoundException e) {
-                            Log.d("SwiftCamera", "File not found: " + e.getMessage());
-                        } catch (IOException e) {
-                            Log.d("SwiftCamera", "Error accessing file: " + e.getMessage());
-                        }
-
-                        data = null;
-                        final Bitmap bitmap = BitmapFactory.decodeFile(pictureFile.getAbsolutePath());
-                        // mGPUImage.setImage(bitmap);
+                        final Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
                         mCameraView.setGLSurfaceViewRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-                        mGPUImage.saveToPictures(bitmap, "SwiftCamera", System.currentTimeMillis() + ".jpg", new GPUImage.OnPictureSavedListener() {
+                        mGPUImage.saveToPictures(bitmap, "SwiftCamera", pictureFile.getName(), new GPUImage.OnPictureSavedListener() {
 
                                     @Override
                                     public void onPictureSaved(final Uri uri) {
@@ -228,9 +267,10 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
 
                                         System.gc();
 
-                                        pictureFile.delete();
                                         camera.startPreview();
                                         mCameraView.setGLSurfaceViewRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+
+                                        mCameraView.updateLastPhoto();
                                     }
                                 });
                     }
@@ -313,14 +353,10 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
             mCameraView.updatePreviewRatio(mPreviewSize.width > mPreviewSize.height ? ((float) mPreviewSize.height / (float)mPreviewSize.width) : ((float)mPreviewSize.width / (float)mPreviewSize.height));
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            mParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);//1连续对焦
-        } else {
-            mParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-        }
-        setDispaly(mParameters, mCameraInst);
+        mParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);//1连续对焦
+        setDispaly(mCameraInst);
 
-        if (mCurrentCameraId == 0) {
+        if (!isFrontCamera()) {
             if (canSwitchFlashMode()) {
                 mParameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
                 mCameraView.setFlashViewResourceId(R.mipmap.camera_flash_off);
@@ -520,26 +556,26 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
 
 
     //控制图像的正确显示方向
-    private void setDispaly(Camera.Parameters parameters, Camera camera) {
-        if (Build.VERSION.SDK_INT >= 8) {
-            setDisplayOrientation(camera, 90);
-        } else {
-            parameters.setRotation(90);
+    private void setDispaly(Camera camera) {
+        Camera.CameraInfo info = new Camera.CameraInfo();
+        android.hardware.Camera.getCameraInfo(mCurrentCameraId, info);
+        int rotation = ((Activity) mCameraView).getWindowManager().getDefaultDisplay().getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0: degrees = 0; break;
+            case Surface.ROTATION_90: degrees = 90; break;
+            case Surface.ROTATION_180: degrees = 180; break;
+            case Surface.ROTATION_270: degrees = 270; break;
         }
-    }
 
-    //实现的图像的正确显示
-    private void setDisplayOrientation(Camera camera, int i) {
-        Method downPolymorphic;
-        try {
-            downPolymorphic = camera.getClass().getMethod("setDisplayOrientation",
-                    new Class[]{int.class});
-            if (downPolymorphic != null) {
-                downPolymorphic.invoke(camera, new Object[]{i});
-            }
-        } catch (Exception e) {
-            Log.e("Came_e", "图像出错");
+        int result;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            result = (info.orientation + degrees) % 360;
+            result = (360 - result) % 360;  // compensate the mirror
+        } else {  // back-facing
+            result = (info.orientation - degrees + 360) % 360;
         }
+        camera.setDisplayOrientation(result);
     }
 
     private void turnLight(Camera mCamera) {
@@ -613,7 +649,7 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
             try {
                 //mCameraInst.setPreviewDisplay(mCameraView.surfaceView().getHolder());
                 int orientation = mCameraHelper.getCameraDisplayOrientation((Activity) mContext, mCurrentCameraId);
-                mGPUImage.setUpCamera(mCameraInst, orientation, mCurrentCameraId == 0 ? false : true, false);
+                mGPUImage.setUpCamera(mCameraInst, orientation, isFrontCamera() ? true : false, false);
                 initCamera();
                 mCameraInst.startPreview();
             } catch (Exception e) {
@@ -671,5 +707,10 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         autoFocus();
+    }
+
+    @Override
+    public OrientationEventListener getOrientationEventListener() {
+        return mOrientationListener;
     }
 }
