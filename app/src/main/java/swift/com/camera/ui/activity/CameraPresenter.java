@@ -56,8 +56,6 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
     private Camera.Size mAdapterSize = null;
     private Camera.Size mPreviewSize = null;
     private int mCurrentCameraId = 0;  //1是前置 0是后置
-    //放大缩小
-    private int mCurZoomValue = 0;
     private int mCurOrientation = 0;
 
     public CameraPresenter(CameraContract.View cameraView, CameraContract.Support cameraSupport) {
@@ -87,10 +85,7 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
 
     @Override
     public boolean canSwitchCamera() {
-        if (!mCameraHelper.hasFrontCamera() || !mCameraHelper.hasBackCamera()) {
-            return false;
-        }
-        return true;
+        return mCameraHelper.hasFrontCamera() && mCameraHelper.hasBackCamera();
     }
 
     @Override
@@ -105,11 +100,7 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
 
     @Override
     public boolean canSwitchFlashMode() {
-        if (mCameraInst != null && mCameraInst.getParameters().getFlashMode() != null) {
-            return true;
-        }
-
-        return false;
+        return (mCameraInst != null && mCameraInst.getParameters().getFlashMode() != null);
     }
 
     @Override
@@ -163,7 +154,7 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         return params.isZoomSupported() && params.getMaxZoom() > 0;
     }
 
-    public int maxZoom() {
+    private int maxZoom() {
         if (canZoom()) {
             Camera.Parameters params = mCameraInst.getParameters();
             return params.getMaxZoom();
@@ -172,7 +163,7 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         }
     }
 
-    public int currentZoom() {
+    private int currentZoom() {
         if (canZoom()) {
             Camera.Parameters params = mCameraInst.getParameters();
             return params.getZoom();
@@ -188,19 +179,18 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
             if (!params.isZoomSupported() || params.getMaxZoom() == 0) {
                 return;
             }
-            mCurZoomValue = zoom;
-            if (mCurZoomValue < 0) {
-                mCurZoomValue = 0;
-            } else if (mCurZoomValue > params.getMaxZoom()) {
-                mCurZoomValue = params.getMaxZoom();
+            int curZoomValue = zoom;
+            if (curZoomValue < 0) {
+                curZoomValue = 0;
+            } else if (curZoomValue > params.getMaxZoom()) {
+                curZoomValue = params.getMaxZoom();
             }
 
             if (!params.isSmoothZoomSupported()) {
-                params.setZoom(mCurZoomValue);
+                params.setZoom(curZoomValue);
                 mCameraInst.setParameters(params);
-                return;
             } else {
-                mCameraInst.startSmoothZoom(mCurZoomValue);
+                mCameraInst.startSmoothZoom(curZoomValue);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -228,14 +218,10 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
     private boolean isFrontCamera() {
         Camera.CameraInfo info = new Camera.CameraInfo();
         android.hardware.Camera.getCameraInfo(mCurrentCameraId, info);
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            return true;
-        }
-        return false;
+        return (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT);
     }
 
     private void takePicture() {
-        // TODO get a size that is about the size of the screen
         Camera.Parameters params = mCameraInst.getParameters();
         int rotation = mCurOrientation;
         if (isFrontCamera()) {
@@ -277,8 +263,8 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
                 });
     }
 
-    public static final int MEDIA_TYPE_IMAGE = 1;
-    public static final int MEDIA_TYPE_VIDEO = 2;
+    private static final int MEDIA_TYPE_IMAGE = 1;
+    private static final int MEDIA_TYPE_VIDEO = 2;
 
     private static File getOutputMediaFile(final int type) {
         // To be safe, you should check that the SDCard is mounted
@@ -341,10 +327,10 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
     private void initCamera() {
         mParameters = mCameraInst.getParameters();
         mParameters.setPictureFormat(PixelFormat.JPEG);
-        //if (adapterSize == null) {
-        setUpPicSize(mParameters);
-        setUpPreviewSize(mParameters);
-        //}
+
+        setUpPicSize();
+        setUpPreviewSize();
+
         if (mAdapterSize != null) {
             mParameters.setPictureSize(mAdapterSize.width, mAdapterSize.height);
         }
@@ -376,20 +362,14 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         mCameraInst.cancelAutoFocus();// 2如果要实现连续的自动对焦，这一句必须加上
     }
 
-    private void setUpPicSize(Camera.Parameters parameters) {
-
-        if (mAdapterSize != null) {
-            return;
-        } else {
+    private void setUpPicSize() {
+        if (mAdapterSize == null) {
             mAdapterSize = findBestPictureResolution();
         }
     }
 
-    private void setUpPreviewSize(Camera.Parameters parameters) {
-
-        if (mPreviewSize != null) {
-            return;
-        } else {
+    private void setUpPreviewSize() {
+        if (mPreviewSize == null) {
             mPreviewSize = findBestPreviewResolution();
         }
     }
@@ -480,8 +460,7 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
 
         // 如果没有找到合适的，并且还有候选的像素，则设置其中最大比例的，对于配置比较低的机器不太合适
         if (!supportedPreviewResolutions.isEmpty()) {
-            Camera.Size largestPreview = supportedPreviewResolutions.get(0);
-            return largestPreview;
+            return supportedPreviewResolutions.get(0);
         }
 
         // 没有找到合适的，就返回默认的
@@ -649,7 +628,7 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
             try {
                 //mCameraInst.setPreviewDisplay(mCameraView.surfaceView().getHolder());
                 int orientation = mCameraHelper.getCameraDisplayOrientation((Activity) mContext, mCurrentCameraId);
-                mGPUImage.setUpCamera(mCameraInst, orientation, isFrontCamera() ? true : false, false);
+                mGPUImage.setUpCamera(mCameraInst, orientation, isFrontCamera(), false);
                 initCamera();
                 mCameraInst.startPreview();
             } catch (Exception e) {

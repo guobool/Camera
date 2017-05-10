@@ -41,8 +41,6 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
     private float mScreenBrightness;
 
     private LinearLayout mFilterLayout;
-    private RecyclerView mFilterListView;
-    private FilterAdapter mFilterAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,14 +84,14 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
         surfaceView.getHolder().addCallback((SurfaceHolder.Callback)mCameraPresenter);
 
         mFilterLayout = (LinearLayout)findViewById(R.id.layout_filter);
-        mFilterListView = (RecyclerView) findViewById(R.id.filter_listView);
-        mFilterAdapter = new FilterAdapter(this);
-        mFilterListView.setAdapter(mFilterAdapter);
-        mFilterAdapter.setOnFilterChangeListener(onFilterChangeListener);
+        RecyclerView filterListView = (RecyclerView) findViewById(R.id.filter_listView);
+        FilterAdapter filterAdapter = new FilterAdapter(this);
+        filterListView.setAdapter(filterAdapter);
+        filterAdapter.setOnFilterChangeListener(onFilterChangeListener);
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        mFilterListView.setLayoutManager(linearLayoutManager);
+        filterListView.setLayoutManager(linearLayoutManager);
 
         findViewById(R.id.goBack).setOnClickListener(this);
         findViewById(R.id.switchCamera).setOnClickListener(this);
@@ -247,8 +245,7 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
 
     @Override
     public GLSurfaceView surfaceView() {
-        GLSurfaceView view = (GLSurfaceView) findViewById(R.id.surfaceView);
-        return view;
+        return (GLSurfaceView) findViewById(R.id.surfaceView);
     }
 
     @Override
