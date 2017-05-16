@@ -8,6 +8,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.hardware.Camera;
+import android.media.CamcorderProfile;
+import android.media.MediaRecorder;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
@@ -28,6 +30,9 @@ import java.util.List;
 
 import cn.m15.gpuimage.GPUImage;
 import cn.m15.gpuimage.GPUImageFilter;
+import cn.m15.gpuimage.Rotation;
+import cn.m15.gpuimage.video.GPUImageVideo;
+import cn.m15.gpuimage.video.RecordCoderState;
 import swift.com.camera.R;
 import swift.com.camera.utils.CameraHelper;
 import swift.com.camera.utils.PluginFilterHelper;
@@ -45,8 +50,9 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
 
     private OrientationEventListener mOrientationListener;
 
-    private GPUImage mGPUImage;
+    private GPUImageVideo mGPUImage;
     private GPUImageFilter mFilter;
+    private String mFilterId = "";
 
     private CameraHelper mCameraHelper;
 
@@ -62,7 +68,7 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         mCameraView = cameraView;
         mCameraSupport = cameraSupport;
         mContext = (Context) cameraView;
-        mGPUImage = new GPUImage(mContext);
+        mGPUImage = new GPUImageVideo(mContext);
         mCameraHelper = new CameraHelper(mContext);
         mOrientationListener = new OrientationEventListener(mContext) {
             @Override
@@ -119,16 +125,25 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
 
     @Override
     public void chooseFilter(String filterId) {
+        mFilterId = filterId;
+        GPUImageFilter filter = getFilter(mFilterId);
+        if (filter != null) {
+            switchFilterTo(filter);
+        }
+    }
+
+    private GPUImageFilter getFilter(String filterId) {
         if (filterId.length() == 0) {
-            switchFilterTo(new GPUImageFilter());
+            return new GPUImageFilter();
         } else {
             PluginFilterPackage p = PluginFilterHelper.getInstance(mContext).getPackage(filterId);
             if (p != null) {
                 GPUImageFilter f = p.getFilter();
                 if (f != null) {
-                    switchFilterTo(f);
+                    return f;
                 }
             }
+            return null;
         }
     }
 
@@ -217,8 +232,42 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
 
     private boolean isFrontCamera() {
         Camera.CameraInfo info = new Camera.CameraInfo();
-        android.hardware.Camera.getCameraInfo(mCurrentCameraId, info);
+        Camera.getCameraInfo(mCurrentCameraId, info);
         return (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT);
+    }
+
+    private void startRecord() {
+        if (mGPUImage.getCurrentRecordState() == RecordCoderState.IDLE) {
+            final File videoFile = getOutputMediaFile(MEDIA_TYPE_VIDEO);
+            if (videoFile == null) {
+                Log.d("SwiftCamera", "Error creating media file, check storage permissions");
+                return;
+            }
+
+            Camera.Parameters params = mCameraInst.getParameters();
+            // 设置对焦模式
+            List<String> focusModes = params.getSupportedFocusModes();
+            if (focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
+                params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+            }
+
+            // 2.配置录制参数 init recorder params
+            CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
+            profile.videoFrameWidth = mPreviewSize.height;
+            profile.videoFrameHeight = mPreviewSize.width;
+            profile.videoFrameRate = cn.m15.gpuimage.video.VideoConfig.VIDEO_FRAME_RATE;
+            profile.fileFormat = MediaRecorder.OutputFormat.MPEG_4;
+            profile.videoCodec = MediaRecorder.VideoEncoder.H264;
+            profile.audioCodec = MediaRecorder.AudioEncoder.AAC;
+
+            mCameraInst.setParameters(params);
+
+            mGPUImage.createNewRecorder(videoFile, profile.videoFrameWidth, profile.videoFrameHeight, mCurOrientation, 800000);
+            mGPUImage.startRecord();
+        } else if (mGPUImage.getCurrentRecordState() == RecordCoderState.START) {
+            mGPUImage.stopRecord();
+        }
+
     }
 
     private void takePicture() {
@@ -231,31 +280,20 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         mCameraInst.setParameters(params);
         mCameraInst.takePicture(null, null,
                 new Camera.PictureCallback() {
-
                     @Override
                     public void onPictureTaken(byte[] data, final Camera camera) {
-
                         final File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
                         if (pictureFile == null) {
                             Log.d("SwiftCamera", "Error creating media file, check storage permissions");
                             return;
                         }
 
-                        final Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                        mCameraView.setGLSurfaceViewRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-                        mGPUImage.saveToPictures(bitmap, "SwiftCamera", pictureFile.getName(), new GPUImage.OnPictureSavedListener() {
-
+                        camera.startPreview();
+                        GPUImageFilter filter = getFilter(mFilterId);
+                        mGPUImage.saveToPictures(data, filter, "SwiftCamera", pictureFile.getName(), new GPUImage.OnPictureSavedListener() {
                                     @Override
                                     public void onPictureSaved(final Uri uri) {
-                                        if(bitmap != null && !bitmap.isRecycled()){
-                                            bitmap.recycle();
-                                        }
-
                                         System.gc();
-
-                                        camera.startPreview();
-                                        mCameraView.setGLSurfaceViewRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
-
                                         mCameraView.updateLastPhoto();
                                     }
                                 });
@@ -316,7 +354,7 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
                     @Override
                     public void onAutoFocus(boolean success, Camera camera) {
                         if (success) {
-                            initCamera();//实现相机的参数初始化
+                            //initCamera();//实现相机的参数初始化
                         }
                     }
                 });
@@ -340,7 +378,9 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         }
 
         mParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);//1连续对焦
-        setDispaly(mCameraInst);
+
+        //int orientation = mCameraHelper.getCameraDisplayOrientation((Activity) mContext, mCurrentCameraId);
+        //mCameraInst.setDisplayOrientation(orientation);
 
         if (!isFrontCamera()) {
             if (canSwitchFlashMode()) {
@@ -533,30 +573,6 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         return defaultPictureResolution;
     }
 
-
-    //控制图像的正确显示方向
-    private void setDispaly(Camera camera) {
-        Camera.CameraInfo info = new Camera.CameraInfo();
-        android.hardware.Camera.getCameraInfo(mCurrentCameraId, info);
-        int rotation = ((Activity) mCameraView).getWindowManager().getDefaultDisplay().getRotation();
-        int degrees = 0;
-        switch (rotation) {
-            case Surface.ROTATION_0: degrees = 0; break;
-            case Surface.ROTATION_90: degrees = 90; break;
-            case Surface.ROTATION_180: degrees = 180; break;
-            case Surface.ROTATION_270: degrees = 270; break;
-        }
-
-        int result;
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            result = (info.orientation + degrees) % 360;
-            result = (360 - result) % 360;  // compensate the mirror
-        } else {  // back-facing
-            result = (info.orientation - degrees + 360) % 360;
-        }
-        camera.setDisplayOrientation(result);
-    }
-
     private void turnLight(Camera mCamera) {
         mCameraView.toggleScreenBrightness();
     }
@@ -626,11 +642,10 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         mCameraInst = getCameraInstance(mCurrentCameraId2);
         if (mCameraInst != null) {
             try {
-                //mCameraInst.setPreviewDisplay(mCameraView.surfaceView().getHolder());
-                int orientation = mCameraHelper.getCameraDisplayOrientation((Activity) mContext, mCurrentCameraId);
-                mGPUImage.setUpCamera(mCameraInst, orientation, isFrontCamera(), false);
                 initCamera();
-                mCameraInst.startPreview();
+                Camera.CameraInfo info = new Camera.CameraInfo();
+                Camera.getCameraInfo(mCurrentCameraId, info);
+                mGPUImage.setUpCamera(mCameraInst, Rotation.fromInt(info.orientation), isFrontCamera(), !isFrontCamera());
             } catch (Exception e) {
                 e.printStackTrace();
             }
