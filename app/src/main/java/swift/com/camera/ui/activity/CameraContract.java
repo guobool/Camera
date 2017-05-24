@@ -10,15 +10,21 @@ import android.view.SurfaceView;
  */
 
 public class CameraContract {
+    public enum RecordState {
+        IDLE,
+        START,
+        STOP
+    }
+
     // UI展示
     interface View {
         GLSurfaceView surfaceView();
         void setFlashViewResourceId(int resourceId);
         void updatePreviewRatio(float ratio);
         void updateZoom(int currentZoom, int maxZoom);
-        void setGLSurfaceViewRenderMode(int renderMode);
         void updateLastPhoto();
         void toggleScreenBrightness();
+        void updateRecordViews(final RecordState state);
     }
 
     // 逻辑处理
@@ -30,6 +36,9 @@ public class CameraContract {
         void switchFlashMode();
         void chooseFilter(String filterId);
         void takePhoto();
+        void toggleRecord();
+        void switchMode();
+        boolean isRecorderMode();
         boolean canZoom();
         void updateZoom(int zoom);
         void pointFocus(int x, int y);

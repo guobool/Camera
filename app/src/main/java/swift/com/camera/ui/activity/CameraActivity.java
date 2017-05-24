@@ -2,10 +2,14 @@ package swift.com.camera.ui.activity;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.graphics.Bitmap;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
+import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,6 +21,7 @@ import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
+import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -38,9 +43,13 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
     private float mFocusPointX, mFocusPointY;
     private Handler mFocusHandler = new Handler();
     private Handler mZoomHandler = new Handler();
+    private Handler mRecordHandler = new Handler();
     private float mScreenBrightness;
 
     private LinearLayout mFilterLayout;
+    private TabLayout mModeTab;
+    private RelativeLayout mContentPanel;
+    private GLSurfaceView mGLSurfaceView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,14 +83,34 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
     }
 
     private void initView() {
-        GLSurfaceView surfaceView = (GLSurfaceView) findViewById(R.id.surfaceView);
-        mCameraPresenter.setGLSurfaceView(surfaceView);
-        SurfaceHolder surfaceHolder = surfaceView.getHolder();
-        surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        surfaceHolder.setKeepScreenOn(true);
-        surfaceView.setFocusable(true);
-        surfaceView.setBackgroundColor(TRIM_MEMORY_BACKGROUND);
-        surfaceView.getHolder().addCallback((SurfaceHolder.Callback)mCameraPresenter);
+        mModeTab = (TabLayout) findViewById(R.id.modeTab);
+        mModeTab.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                mCameraPresenter.switchMode();
+                initGLSurfaceView();
+                if (mCameraPresenter.isRecorderMode()) {
+                    findViewById(R.id.capture).setBackgroundResource(R.drawable.btn_start_record);
+                    findViewById(R.id.recordTime).setVisibility(View.VISIBLE);
+                } else {
+                    findViewById(R.id.capture).setBackgroundResource(R.drawable.btn_take_photo);
+                    findViewById(R.id.recordTime).setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+
+        mContentPanel = (RelativeLayout) findViewById(R.id.contentPanel);
+        initGLSurfaceView();
 
         mFilterLayout = (LinearLayout)findViewById(R.id.layout_filter);
         RecyclerView filterListView = (RecyclerView) findViewById(R.id.filter_listView);
@@ -99,6 +128,22 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
         findViewById(R.id.capture).setOnClickListener(this);
         findViewById(R.id.filter).setOnClickListener(this);
         findViewById(R.id.btn_camera_closefilter).setOnClickListener(this);
+
+        Chronometer recordTimer = ((Chronometer)findViewById(R.id.recordTime));
+        recordTimer.setText("00:00:00");
+        recordTimer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener(){
+            @Override
+            public void onChronometerTick(Chronometer cArg) {
+                long time = SystemClock.elapsedRealtime() - cArg.getBase();
+                int h   = (int)(time /3600000);
+                int m = (int)(time - h*3600000)/60000;
+                int s= (int)(time - h*3600000- m*60000)/1000 ;
+                String hh = h < 10 ? "0"+h: h+"";
+                String mm = m < 10 ? "0"+m: m+"";
+                String ss = s < 10 ? "0"+s: s+"";
+                cArg.setText(hh+":"+mm+":"+ss);
+            }
+        });
 
         ImageView galleyView = (ImageView) findViewById(R.id.galley);
         galleyView.setOnClickListener(this);
@@ -122,52 +167,6 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
             }
         });
 
-        surfaceView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                    case MotionEvent.ACTION_DOWN:
-                        mFocusPointX = event.getX();
-                        mFocusPointY = event.getY();
-                        break;
-                    default:
-                        break;
-                }
-                return false;
-            }
-        });
-
-        surfaceView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    mCameraPresenter.pointFocus((int) mFocusPointX, (int) mFocusPointY);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                final View focusIndex = findViewById(R.id.focus_index);
-                RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(focusIndex.getLayoutParams());
-                layout.setMargins((int) mFocusPointX - 60, (int) mFocusPointY - 60, 0, 0);
-                focusIndex.setLayoutParams(layout);
-                focusIndex.setVisibility(View.VISIBLE);
-                ScaleAnimation sa = new ScaleAnimation(3f, 1f, 3f, 1f,
-                        ScaleAnimation.RELATIVE_TO_SELF, 0.5f, ScaleAnimation.RELATIVE_TO_SELF, 0.5f);
-                sa.setDuration(800);
-                focusIndex.startAnimation(sa);
-                mFocusHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        focusIndex.setVisibility(View.INVISIBLE);
-                    }
-                }, 800);
-
-                if (mCameraPresenter.canZoom()) {
-                    zoomBar.setAlpha(1.0f);
-                    hideZoomBarDelayed();
-                }
-            }
-        });
-
         View cameraSwitchView = findViewById(R.id.switchCamera);
         if (!mCameraPresenter.canSwitchCamera()) {
             cameraSwitchView.setVisibility(View.INVISIBLE);
@@ -179,11 +178,95 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
         }
     }
 
+    private void initGLSurfaceView() {
+        if (mGLSurfaceView != null) {
+            if (mContentPanel.indexOfChild(mGLSurfaceView) >= 0) {
+                mContentPanel.removeView(mGLSurfaceView);
+            }
+            mGLSurfaceView = null;
+        }
+
+        mGLSurfaceView = new GLSurfaceView(this);
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+        lp.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        lp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+        mGLSurfaceView.setLayoutParams(lp);
+        mContentPanel.addView(mGLSurfaceView);
+
+        mCameraPresenter.setGLSurfaceView(mGLSurfaceView);
+        SurfaceHolder surfaceHolder = mGLSurfaceView.getHolder();
+        surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        surfaceHolder.setKeepScreenOn(true);
+        mGLSurfaceView.setFocusable(true);
+        mGLSurfaceView.setBackgroundColor(TRIM_MEMORY_BACKGROUND);
+        mGLSurfaceView.getHolder().addCallback((SurfaceHolder.Callback)mCameraPresenter);
+
+        if (mCameraPresenter.isRecorderMode()) {
+            mGLSurfaceView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mCameraPresenter.canZoom()) {
+                        findViewById(R.id.zoomBar).setAlpha(1.0f);
+                        hideZoomBarDelayed();
+                    }
+                }
+            });
+        } else {
+            mGLSurfaceView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                        case MotionEvent.ACTION_DOWN:
+                            mFocusPointX = event.getX();
+                            mFocusPointY = event.getY();
+                            break;
+                        default:
+                            break;
+                    }
+                    return false;
+                }
+            });
+
+            mGLSurfaceView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        mCameraPresenter.pointFocus((int) mFocusPointX, (int) mFocusPointY);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    final View focusIndex = findViewById(R.id.focus_index);
+                    RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(focusIndex.getLayoutParams());
+                    layout.setMargins((int) mFocusPointX - 60, (int) mFocusPointY - 60, 0, 0);
+                    focusIndex.setLayoutParams(layout);
+                    focusIndex.setVisibility(View.VISIBLE);
+                    ScaleAnimation sa = new ScaleAnimation(3f, 1f, 3f, 1f,
+                            ScaleAnimation.RELATIVE_TO_SELF, 0.5f, ScaleAnimation.RELATIVE_TO_SELF, 0.5f);
+                    sa.setDuration(800);
+                    focusIndex.startAnimation(sa);
+                    mFocusHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            focusIndex.setVisibility(View.INVISIBLE);
+                        }
+                    }, 800);
+
+                    if (mCameraPresenter.canZoom()) {
+                        findViewById(R.id.zoomBar).setAlpha(1.0f);
+                        hideZoomBarDelayed();
+                    }
+                }
+            });
+        }
+    }
+
     private void hideZoomBarDelayed() {
+        final SeekBar zoomBar = (SeekBar) findViewById(R.id.zoomBar);
+        zoomBar.clearAnimation();
+        mZoomHandler.removeCallbacksAndMessages(null);
         mZoomHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                final SeekBar zoomBar = (SeekBar) findViewById(R.id.zoomBar);
                 AlphaAnimation aa = new AlphaAnimation(1.0f, 0.0f);
                 aa.setDuration(500);
                 aa.setAnimationListener(new Animation.AnimationListener() {
@@ -222,7 +305,11 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
                 break;
 
             case R.id.capture:
-                mCameraPresenter.takePhoto();
+                if (mCameraPresenter.isRecorderMode()) {
+                    mCameraPresenter.toggleRecord();
+                } else {
+                    mCameraPresenter.takePhoto();
+                }
                 break;
 
             case R.id.switchCamera:
@@ -245,7 +332,7 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
 
     @Override
     public GLSurfaceView surfaceView() {
-        return (GLSurfaceView) findViewById(R.id.surfaceView);
+        return mGLSurfaceView;
     }
 
     @Override
@@ -272,23 +359,16 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
             realHeight = sHeight;
         }
 
-        GLSurfaceView surfaceView = (GLSurfaceView) findViewById(R.id.surfaceView);
-        ViewGroup.LayoutParams lp = surfaceView.getLayoutParams();
+        ViewGroup.LayoutParams lp = mGLSurfaceView.getLayoutParams();
         lp.width = realWidth;
         lp.height = realHeight;
-        surfaceView.setLayoutParams(lp);
+        mGLSurfaceView.setLayoutParams(lp);
 
         CameraGrid gridView = (CameraGrid) findViewById(R.id.masking);
         lp = gridView.getLayoutParams();
         lp.width = realWidth;
         lp.height = realHeight;
         gridView.setLayoutParams(lp);
-    }
-
-    @Override
-    public void setGLSurfaceViewRenderMode(int renderMode) {
-        GLSurfaceView view = (GLSurfaceView) findViewById(R.id.surfaceView);
-        view.setRenderMode(renderMode);
     }
 
     @Override
@@ -309,6 +389,40 @@ public class CameraActivity extends AppCompatActivity implements CameraContract.
             setFlashViewResourceId(R.mipmap.camera_light_on);
         }
         getWindow().setAttributes(lp);
+    }
+
+    @Override
+    public void updateRecordViews(final CameraContract.RecordState state) {
+        mRecordHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                switch (state) {
+                    case IDLE:
+                        findViewById(R.id.goBack).setEnabled(true);
+                        findViewById(R.id.switchCamera).setEnabled(true);
+                        findViewById(R.id.capture).setEnabled(true);
+                        findViewById(R.id.galley).setEnabled(true);
+                        ((Chronometer)findViewById(R.id.recordTime)).setText("00:00:00");
+                        break;
+                    case START:
+                        findViewById(R.id.capture).setBackgroundResource(R.drawable.btn_stop_record);
+                        Chronometer recordTimer = ((Chronometer)findViewById(R.id.recordTime));
+                        recordTimer.setBase(SystemClock.elapsedRealtime());
+                        recordTimer.start();
+                        findViewById(R.id.goBack).setEnabled(false);
+                        findViewById(R.id.switchCamera).setEnabled(false);
+                        findViewById(R.id.galley).setEnabled(false);
+                        break;
+                    case STOP:
+                        findViewById(R.id.capture).setBackgroundResource(R.drawable.btn_start_record);
+                        findViewById(R.id.capture).setEnabled(false);
+                        ((Chronometer)findViewById(R.id.recordTime)).stop();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
     }
 
     @Override

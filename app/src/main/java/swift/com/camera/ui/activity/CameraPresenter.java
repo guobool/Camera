@@ -1,25 +1,38 @@
 package swift.com.camera.ui.activity;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.hardware.Camera;
+import android.location.Location;
+import android.location.LocationManager;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.OrientationEventListener;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.ChunkOffsetBox;
+import com.coremedia.iso.boxes.SampleTableBox;
+import com.coremedia.iso.boxes.StaticChunkOffsetBox;
+import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.UserDataBox;
+import com.googlecode.mp4parser.boxes.apple.AppleGPSCoordinatesBox;
+import com.googlecode.mp4parser.util.Matrix;
+import com.googlecode.mp4parser.util.Path;
+
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +45,6 @@ import cn.m15.gpuimage.GPUImage;
 import cn.m15.gpuimage.GPUImageFilter;
 import cn.m15.gpuimage.Rotation;
 import cn.m15.gpuimage.video.GPUImageVideo;
-import cn.m15.gpuimage.video.RecordCoderState;
 import swift.com.camera.R;
 import swift.com.camera.utils.CameraHelper;
 import swift.com.camera.utils.PluginFilterHelper;
@@ -43,14 +55,14 @@ import swift.com.camera.utils.ScreenUtils;
  * Created by junnikokuki on 2017/4/12.
  */
 
-public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.Callback {
+public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.Callback, GPUImageVideo.OnRecordFinishedListener {
     private final CameraContract.View mCameraView;
     private final CameraContract.Support mCameraSupport;
     private final Context mContext;
 
     private OrientationEventListener mOrientationListener;
 
-    private GPUImageVideo mGPUImage;
+    private GPUImage mGPUImage;
     private GPUImageFilter mFilter;
     private String mFilterId = "";
 
@@ -64,21 +76,25 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
     private int mCurrentCameraId = 0;  //1是前置 0是后置
     private int mCurOrientation = 0;
 
+    private int mRecordOrientation = 0;
+
+    private boolean mRecorderMode = false;
+
     public CameraPresenter(CameraContract.View cameraView, CameraContract.Support cameraSupport) {
         mCameraView = cameraView;
         mCameraSupport = cameraSupport;
         mContext = (Context) cameraView;
-        mGPUImage = new GPUImageVideo(mContext);
+        mGPUImage = new GPUImage(mContext);
         mCameraHelper = new CameraHelper(mContext);
         mOrientationListener = new OrientationEventListener(mContext) {
             @Override
             public void onOrientationChanged(int i) {
                 int rotation = 0;
-                if (i > 325 || i <= 45) {
+                if (i > 315 || i <= 45) {
                     rotation = 90;
                 } else if (i > 45 && i <= 135) {
                     rotation = 180;
-                } else if (i > 135 && i < 225) {
+                } else if (i > 135 && i <= 225) {
                     rotation = 270;
                 }
 
@@ -164,6 +180,61 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
     }
 
     @Override
+    public void toggleRecord() {
+        if (!((GPUImageVideo)mGPUImage).isRecording()) {
+            final File videoFile = getOutputMediaFile(MEDIA_TYPE_VIDEO, true);
+            if (videoFile == null) {
+                Log.d("SwiftCamera", "Error creating media file, check storage permissions");
+                return;
+            }
+
+            Camera.Parameters params = mCameraInst.getParameters();
+            // 设置对焦模式
+            List<String> focusModes = params.getSupportedFocusModes();
+            if (focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
+                params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+            }
+
+            // 2.配置录制参数 init recorder params
+            CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
+            profile.videoFrameWidth = mPreviewSize.height;
+            profile.videoFrameHeight = mPreviewSize.width;
+            profile.videoFrameRate = cn.m15.gpuimage.video.EncoderConfig.VIDEO_FRAME_RATE;
+            profile.fileFormat = MediaRecorder.OutputFormat.MPEG_4;
+            profile.videoCodec = MediaRecorder.VideoEncoder.H264;
+            profile.audioCodec = MediaRecorder.AudioEncoder.AAC;
+
+            mCameraInst.setParameters(params);
+            ((GPUImageVideo)mGPUImage).startRecord(videoFile, profile.videoFrameWidth, profile.videoFrameHeight, this);
+            mCameraView.updateRecordViews(CameraContract.RecordState.START);
+
+            int rotation = (mCurOrientation + 270) % 360;
+            mRecordOrientation = rotation;
+        } else {
+            ((GPUImageVideo)mGPUImage).stopRecord();
+            mCameraView.updateRecordViews(CameraContract.RecordState.STOP);
+        }
+    }
+
+    @Override
+    public void switchMode() {
+        mRecorderMode = !mRecorderMode;
+        if (mRecorderMode) {
+            mGPUImage = new GPUImageVideo(mContext);
+        } else {
+            mGPUImage = new GPUImage(mContext);
+        }
+        if (mFilter != null) {
+            mGPUImage.setFilter(mFilter);
+        }
+    }
+
+    @Override
+    public boolean isRecorderMode() {
+        return mRecorderMode;
+    }
+
+    @Override
     public boolean canZoom() {
         Camera.Parameters params = mCameraInst.getParameters();
         return params.isZoomSupported() && params.getMaxZoom() > 0;
@@ -236,40 +307,6 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         return (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT);
     }
 
-    private void startRecord() {
-        if (mGPUImage.getCurrentRecordState() == RecordCoderState.IDLE) {
-            final File videoFile = getOutputMediaFile(MEDIA_TYPE_VIDEO);
-            if (videoFile == null) {
-                Log.d("SwiftCamera", "Error creating media file, check storage permissions");
-                return;
-            }
-
-            Camera.Parameters params = mCameraInst.getParameters();
-            // 设置对焦模式
-            List<String> focusModes = params.getSupportedFocusModes();
-            if (focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
-                params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
-            }
-
-            // 2.配置录制参数 init recorder params
-            CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
-            profile.videoFrameWidth = mPreviewSize.height;
-            profile.videoFrameHeight = mPreviewSize.width;
-            profile.videoFrameRate = cn.m15.gpuimage.video.VideoConfig.VIDEO_FRAME_RATE;
-            profile.fileFormat = MediaRecorder.OutputFormat.MPEG_4;
-            profile.videoCodec = MediaRecorder.VideoEncoder.H264;
-            profile.audioCodec = MediaRecorder.AudioEncoder.AAC;
-
-            mCameraInst.setParameters(params);
-
-            mGPUImage.createNewRecorder(videoFile, profile.videoFrameWidth, profile.videoFrameHeight, mCurOrientation, 800000);
-            mGPUImage.startRecord();
-        } else if (mGPUImage.getCurrentRecordState() == RecordCoderState.START) {
-            mGPUImage.stopRecord();
-        }
-
-    }
-
     private void takePicture() {
         Camera.Parameters params = mCameraInst.getParameters();
         int rotation = mCurOrientation;
@@ -282,7 +319,7 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
                 new Camera.PictureCallback() {
                     @Override
                     public void onPictureTaken(byte[] data, final Camera camera) {
-                        final File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
+                        final File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE, false);
                         if (pictureFile == null) {
                             Log.d("SwiftCamera", "Error creating media file, check storage permissions");
                             return;
@@ -304,7 +341,7 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
     private static final int MEDIA_TYPE_IMAGE = 1;
     private static final int MEDIA_TYPE_VIDEO = 2;
 
-    private static File getOutputMediaFile(final int type) {
+    private static File getOutputMediaFile(final int type, boolean temp) {
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
 
@@ -326,10 +363,10 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         File mediaFile;
         if (type == MEDIA_TYPE_IMAGE) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "IMG_" + timeStamp + ".jpg");
+                    "IMG_" + timeStamp + (temp ? "_temp" : "") + ".jpg");
         } else if (type == MEDIA_TYPE_VIDEO) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "VID_" + timeStamp + ".mp4");
+                    "VID_" + timeStamp + (temp ? "_temp" : "") + ".mp4");
         } else {
             return null;
         }
@@ -410,7 +447,11 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
 
     private void setUpPreviewSize() {
         if (mPreviewSize == null) {
-            mPreviewSize = findBestPreviewResolution();
+            if (mRecorderMode) {
+                mPreviewSize = findBestRecordResolution();
+            } else {
+                mPreviewSize = findBestPreviewResolution();
+            }
         }
     }
 
@@ -506,6 +547,42 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         // 没有找到合适的，就返回默认的
 
         return defaultPreviewResolution;
+    }
+
+    private Camera.Size findBestRecordResolution() {
+        Camera.Parameters cameraParameters = mCameraInst.getParameters();
+        Camera.Size defaultPreviewResolution = cameraParameters.getPreviewSize();
+
+        List<Camera.Size> rawSupportedSizes = cameraParameters.getSupportedPreviewSizes();
+        if (rawSupportedSizes == null) {
+            return defaultPreviewResolution;
+        }
+
+        // 按照分辨率从大到小排序
+        List<Camera.Size> supportedPreviewResolutions = new ArrayList<Camera.Size>(rawSupportedSizes);
+        Collections.sort(supportedPreviewResolutions, new Comparator<Camera.Size>() {
+            @Override
+            public int compare(Camera.Size a, Camera.Size b) {
+                int aPixels = a.height * a.width;
+                int bPixels = b.height * b.width;
+                if (bPixels < aPixels) {
+                    return -1;
+                }
+                if (bPixels > aPixels) {
+                    return 1;
+                }
+                return 0;
+            }
+        });
+
+        StringBuilder previewResolutionSb = new StringBuilder();
+        for (Camera.Size supportedPreviewResolution : supportedPreviewResolutions) {
+            previewResolutionSb.append(supportedPreviewResolution.width).append('x').append(supportedPreviewResolution.height)
+                    .append(' ');
+        }
+        Log.v(TAG, "Supported record resolutions: " + previewResolutionSb);
+
+        return supportedPreviewResolutions.get(0);
     }
 
     private Camera.Size findBestPictureResolution() {
@@ -662,6 +739,10 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
         return c;
     }
 
+    private void parseVideoFile() {
+
+    }
+
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     private void showPoint(int x, int y) {
         if (mParameters.getMaxNumMeteringAreas() > 0) {
@@ -695,6 +776,9 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
     public void surfaceCreated(SurfaceHolder holder) {
         if (null == mCameraInst) {
             setUpCamera(mCurrentCameraId);
+            if (canZoom()) {
+                mCameraView.updateZoom(currentZoom(), maxZoom());
+            }
         }
     }
 
@@ -706,5 +790,138 @@ public class CameraPresenter implements CameraContract.Presenter, SurfaceHolder.
     @Override
     public OrientationEventListener getOrientationEventListener() {
         return mOrientationListener;
+    }
+
+    @Override
+    public void onRecordFinished(final File outputRecFile) {
+        Thread thread = new Thread(new Runnable() {
+            public void run() {
+                long originalUserDataSize = 0;
+                long finalUserDataSize = 0;
+
+                try {
+                    Matrix rotation = Matrix.ROTATE_0;
+                    if (mRecordOrientation == 90) {
+                        rotation = Matrix.ROTATE_90;
+                    } else if (mRecordOrientation == 180) {
+                        rotation = Matrix.ROTATE_180;
+                    } else if (mRecordOrientation == 270) {
+                        rotation = Matrix.ROTATE_270;
+                    }
+
+                    IsoFile isoFile = new IsoFile(outputRecFile.getAbsolutePath());
+                    List<TrackBox> trackBoxes = isoFile.getMovieBox().getBoxes(TrackBox.class);
+                    for (TrackBox trackBox : trackBoxes) {
+                        trackBox.getTrackHeaderBox().setMatrix(rotation);
+                    }
+
+                    LocationManager locationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
+                    if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                        if (location != null) {
+                            double latitude = location.getLatitude();
+                            double longitude = location.getLongitude();
+
+                            if (latitude != 0 && longitude != 0) {
+                                UserDataBox userDataBox = Path.getPath(isoFile, "/moov/udta");
+                                if (userDataBox == null) {
+                                    userDataBox = new UserDataBox();
+                                    isoFile.getMovieBox().addBox(userDataBox);
+                                } else {
+                                    originalUserDataSize = userDataBox.getSize();
+                                }
+
+                                AppleGPSCoordinatesBox locationBox = null;
+                                List<AppleGPSCoordinatesBox> locationBoxes = isoFile.getMovieBox().getBoxes(AppleGPSCoordinatesBox.class);
+                                if (locationBoxes.size() > 0) {
+                                    locationBox = locationBoxes.get(0);
+                                } else {
+                                    locationBox = new AppleGPSCoordinatesBox();
+                                    userDataBox.addBox(locationBox);
+                                }
+
+                                locationBox.setValue((longitude >= 0 ? "+" : "") + String.format("%.4f", longitude) + (latitude >= 0 ? "+" : "") + String.format("%.4f", latitude) + "/");
+
+                                finalUserDataSize = userDataBox.getSize();
+                            }
+                        }
+                    }
+
+                    if (needsOffsetCorrection(isoFile)) {
+                        correctChunkOffsets(isoFile, finalUserDataSize - originalUserDataSize);
+                    }
+
+                    String finalFileName = outputRecFile.getAbsolutePath();
+                    finalFileName = finalFileName.replace("_temp", "");
+                    File finalFile = new File(finalFileName);
+
+                    FileOutputStream videoFileOutputStream = new FileOutputStream(finalFile.getAbsoluteFile());
+                    isoFile.getBox(videoFileOutputStream.getChannel());
+
+                    isoFile.close();
+                    videoFileOutputStream.close();
+
+                    outputRecFile.delete();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                Handler mainHandler = new Handler(Looper.getMainLooper());
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mCameraView.updateRecordViews(CameraContract.RecordState.IDLE);
+                    }
+                });
+            }
+        });
+        thread.start();
+    }
+
+    private static boolean needsOffsetCorrection(IsoFile isoFile) {
+        if (Path.getPaths(isoFile, "mdat").size() > 1) {
+            throw new RuntimeException("There might be the weird case that a file has two mdats. One before" +
+                    " moov and one after moov. That would need special handling therefore I just throw an " +
+                    "exception here. ");
+        }
+
+        if (Path.getPaths(isoFile, "moof").size() > 0) {
+            throw new RuntimeException("Fragmented MP4 files need correction, too. (But I would need to look where)");
+        }
+
+        for (Box box : isoFile.getBoxes()) {
+            if ("mdat".equals(box.getType())) {
+                return false;
+            }
+            if ("moov".equals(box.getType())) {
+                return true;
+            }
+        }
+        throw new RuntimeException("Hmmm - shouldn't happen");
+    }
+
+    private static void correctChunkOffsets(IsoFile tempIsoFile, long correction) {
+        List<SampleTableBox> sampleTableBoxes = Path.getPaths(tempIsoFile, "/moov[0]/trak/mdia[0]/minf[0]/stbl[0]");
+
+        for (SampleTableBox sampleTableBox : sampleTableBoxes) {
+
+            List<Box> stblChildren = new ArrayList<Box>(sampleTableBox.getBoxes());
+            ChunkOffsetBox chunkOffsetBox = Path.getPath(sampleTableBox, "stco");
+            if (chunkOffsetBox == null) {
+                stblChildren.remove(Path.getPath(sampleTableBox, "co64"));
+            }
+            stblChildren.remove(chunkOffsetBox);
+
+            assert chunkOffsetBox != null;
+            long[] cOffsets = chunkOffsetBox.getChunkOffsets();
+            for (int i = 0; i < cOffsets.length; i++) {
+                cOffsets[i] += correction;
+            }
+
+            StaticChunkOffsetBox cob = new StaticChunkOffsetBox();
+            cob.setChunkOffsets(cOffsets);
+            stblChildren.add(cob);
+            sampleTableBox.setBoxes(stblChildren);
+        }
     }
 }
