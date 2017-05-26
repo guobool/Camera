@@ -88,8 +88,7 @@ public class CameraHelper {
     }
 
     public int getCameraDisplayOrientation(final Activity activity, final int cameraId) {
-        int rotation = activity.getWindowManager().getDefaultDisplay()
-                .getRotation();
+        int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
         int degrees = 0;
         switch (rotation) {
             case Surface.ROTATION_0:
