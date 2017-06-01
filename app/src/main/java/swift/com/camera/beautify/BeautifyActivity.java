@@ -13,6 +13,8 @@ import swift.com.camera.Album.DaggerAlbumComponent;
 import swift.com.camera.R;
 import swift.com.camera.TheApplication;
 import swift.com.camera.data.PictureBean;
+import swift.com.camera.utils.ImageLoad.GlideImageLoader;
+import swift.com.camera.utils.ImageLoad.ImageLoader;
 
 import static dagger.internal.Preconditions.checkNotNull;
 
@@ -23,22 +25,24 @@ import static dagger.internal.Preconditions.checkNotNull;
 public class BeautifyActivity extends AppCompatActivity implements BeautifyContract.View{
     @Inject BeautifyPresenter mPresenter;
     private ImageView mIvBeautifyImage;
+    private ImageLoader mImageLoader;
     @Override
     protected void onCreate(Bundle savedInstancesState){
         super.onCreate(savedInstancesState);
         setContentView(R.layout.activity_beautify);
         mIvBeautifyImage = (ImageView)findViewById(R.id.ivBeautifyImage);
         PictureBean mPictureBean = (PictureBean) getIntent().getSerializableExtra("PictureBean");
-
+        mImageLoader = GlideImageLoader.getInstance(this);
         // 注入
         DaggerBeautifyComponent.builder()
                 .pictureRepositoryComponent(((TheApplication)getApplication()).getTasksRepositoryComponent())
                 .beautifyPresenterModule(new BeautifyPresenterModule(this))
                 .build()
                 .inject(this);
+
         if(mPictureBean != null){
             //获取原图
-            mPresenter.getImage(mPictureBean.getmImagePath(), 0, 0);
+            mImageLoader.getOriginalImage(mPictureBean.getImagePath(), mIvBeautifyImage);
         }
     }
 
@@ -47,10 +51,4 @@ public class BeautifyActivity extends AppCompatActivity implements BeautifyContr
         mPresenter = (BeautifyPresenter)checkNotNull(presenter);
     }
 
-    @Override
-    public void showImage(Bitmap picture) {
-        if(picture != null) {
-            mIvBeautifyImage.setImageBitmap(picture);
-        }
-    }
 }

@@ -1,21 +1,15 @@
 package swift.com.camera.Album;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-
 import java.util.List;
-import java.util.Map;
-
+import javax.inject.Inject;
 import swift.com.camera.data.PictureBean;
-
-import static android.support.v7.recyclerview.R.attr.layoutManager;
+import swift.com.camera.utils.ImageLoad.GlideImageLoader;
+import swift.com.camera.utils.ImageLoad.ImageLoader;
 import static dagger.internal.Preconditions.checkNotNull;
-import static java.lang.System.in;
 
 /**
  * Created by bool on 17-4-17.
@@ -25,10 +19,13 @@ public class AlbumRecycleViewAdapter extends RecyclerView.Adapter<
         AlbumRecycleViewAdapter.ImageViewHolder>{
     private AlbumActivity mContext;
     private List<PictureBean> mPictureBeanList;
+    private ImageLoader mImageLoader;
     public AlbumRecycleViewAdapter(List<PictureBean> list, Context context){
         super();
         mPictureBeanList = list;
         mContext = (AlbumActivity)context;
+        mImageLoader = GlideImageLoader.getInstance(context);
+
     }
     // 创建时用于创建组件,每次创建一个组件都会调用一次该方法。封装是内部实现了组件的重复利用，进行了优化
     @Override
@@ -40,11 +37,10 @@ public class AlbumRecycleViewAdapter extends RecyclerView.Adapter<
     @Override
     public void onBindViewHolder(ImageViewHolder holder, int position) {
         // 根据显示的宽高获取相应尺寸的图片
-        mContext.setImage(mPictureBeanList.get(position).getmImagePath(),
-                holder.mSivItem.getWidth(), holder.mSivItem.getHeight(),
+        mImageLoader.getAdapteImage(mPictureBeanList.get(position).getImagePath(),
                 holder.mSivItem.getImageView());
-
-        //holder.mSivItem.setImage(bitmap);
+//        mContext.setImage(mPictureBeanList.get(position).getImagePath(),
+//                holder.mSivItem.getImageView());
     }
 
     @Override
@@ -56,13 +52,6 @@ public class AlbumRecycleViewAdapter extends RecyclerView.Adapter<
         mPictureBeanList = checkNotNull(mImageList);
         notifyDataSetChanged();
     }
-
-    public void onPictureLoaded(Bitmap picture) {
-        checkNotNull(picture);
-        //createViewHolder().setIsRecyclable();
-    }
-
-
 
     public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         SelectImageView mSivItem;

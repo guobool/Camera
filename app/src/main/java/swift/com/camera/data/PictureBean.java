@@ -12,7 +12,7 @@ public final class PictureBean implements Serializable {
     public PictureBean(String path){
         mImagePath = path;
     }
-    public String getmImagePath(){
+    public String getImagePath(){
         return mImagePath;
     }
 }

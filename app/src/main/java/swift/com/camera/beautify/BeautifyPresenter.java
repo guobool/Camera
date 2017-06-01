@@ -24,25 +24,4 @@ public class BeautifyPresenter implements BeautifyContract.Presenter{
         mPictureReposotory = repository;
         mBeautifyView = beautifyView;
     }
-
-    @Inject
-    void setupListeners() {
-        mBeautifyView.setPresenter(this);
-    }
-
-    @Override
-    public void getImage(String pathName, int width, int height) {
-        mPictureReposotory.getAdapterImage(new PictureDataSource.GetPictureCallBack(){
-
-            @Override
-            public void onPictureGeted(Bitmap picture) {
-                mBeautifyView.showImage(picture);
-            }
-
-            @Override
-            public void onGetFailed() {
-
-            }
-        },pathName, width, height);
-    }
 }

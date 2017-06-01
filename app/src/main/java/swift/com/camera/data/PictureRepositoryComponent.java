@@ -9,7 +9,7 @@ import swift.com.camera.ApplicationModule;
  * Created by bool on 17-4-13.
  */
 @Singleton
-@Component(modules = {PictureRepositoryModule.class, ApplicationModule.class})
+@Component(modules = {ApplicationModule.class})
 public interface PictureRepositoryComponent {
     PictureRepository getPictureRepository();
 }

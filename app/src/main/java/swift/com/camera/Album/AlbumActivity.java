@@ -26,6 +26,7 @@ import swift.com.camera.TheApplication;
 import swift.com.camera.beautify.BeautifyActivity;
 import swift.com.camera.data.PictureBean;
 import swift.com.camera.processing.ProcessingActivity;
+import swift.com.camera.utils.ImageLoad.ImageLoader;
 
 import static dagger.internal.Preconditions.checkNotNull;
 
@@ -69,6 +70,7 @@ public class AlbumActivity extends AppCompatActivity implements AlbumContract.Vi
                 .build()
                 .inject(this);
 
+
         //----------------------------RecycleView------------------------
         mRvPhotoList = (RecyclerView)findViewById(R.id.rvPhotoList);
         mRvPhotoList.setLayoutManager(new GridLayoutManager(this,3)); //每行3列
@@ -77,7 +79,6 @@ public class AlbumActivity extends AppCompatActivity implements AlbumContract.Vi
         mRvPhotoList.setAdapter(mRecycleAdaptere);
         mRvPhotoList.addItemDecoration(new DivideItemDecoration(this));
         mPresenter.getImagesList();
-        Log.e(this.getClass().getName(), "---------------");
     }
 
     @Override
@@ -106,11 +107,6 @@ public class AlbumActivity extends AppCompatActivity implements AlbumContract.Vi
     public void pictureBeanLoaded(List<PictureBean> pictureBeanList) {
         mImageList = pictureBeanList;
         mRecycleAdaptere.onDataChaged(mImageList);
-    }
-
-    @Override
-    public void setImage(String imageName, int width, int height, ImageView imageView) {
-        mPresenter.setBitMap(imageName, width, height, imageView);
     }
 
     public void onItemSelected(int index) {

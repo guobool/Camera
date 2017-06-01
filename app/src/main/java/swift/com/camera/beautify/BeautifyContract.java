@@ -13,11 +13,9 @@ import swift.com.camera.ui.BasePresenter;
 public interface BeautifyContract {
     interface View extends BaseView<Presenter>{
 
-        void showImage(Bitmap picture);
     }
 
     interface Presenter extends BasePresenter{
 
-        void getImage(String s, int width, int height);
     }
 }
