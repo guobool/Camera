@@ -19,4 +19,8 @@
     <string name="sticker">贴纸</string>
     <string name="cosmetology">美容</string>
     <string name="no_filter">原始</string>
+    <string name="no_image">没有图片</string>
+    <string name="all_image">全部图片</string>
+    <string name="selected_ok">确定 (%1$s/%2$s)</string>
+    <string name="grant_advice_read_album">请授予应用读取权限后再试</string>
 </resources>

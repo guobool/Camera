@@ -2,8 +2,6 @@ package swift.com.camera.Album;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.widget.ImageView;
 import java.util.List;
 import javax.inject.Inject;
 import swift.com.camera.beautify.BeautifyActivity;

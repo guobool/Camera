@@ -1,11 +1,7 @@
 package swift.com.camera.Album;
 
-import android.app.Activity;
-
 import dagger.Module;
 import dagger.Provides;
-import swift.com.camera.utils.ImageLoad.GlideImageLoader;
-import swift.com.camera.utils.ImageLoad.ImageLoader;
 
 /**
  * Created by bool on 17-4-18.
