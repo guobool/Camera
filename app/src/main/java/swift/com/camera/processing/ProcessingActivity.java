@@ -2,11 +2,10 @@ package swift.com.camera.processing;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-
 import javax.inject.Inject;
-
 import swift.com.camera.R;
 import swift.com.camera.Album.AlbumActivity;
 import swift.com.camera.TheApplication;
@@ -82,7 +81,7 @@ public class ProcessingActivity extends AppCompatActivity implements ProcessingC
 
 
     @Override
-    public void setPresenter(ProcessingContract.Presenter presenter) {
+    public void setPresenter(@NonNull ProcessingContract.Presenter presenter) {
         mPresenter = (ProcessingPresenter)checkNotNull(presenter);
     }
 }

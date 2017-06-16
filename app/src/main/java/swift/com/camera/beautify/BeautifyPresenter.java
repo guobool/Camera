@@ -5,10 +5,6 @@ import android.graphics.Bitmap;
 import java.util.List;
 
 import javax.inject.Inject;
-
-import swift.com.camera.Album.AlbumContract;
-import swift.com.camera.data.PictureBean;
-import swift.com.camera.data.PictureDataSource;
 import swift.com.camera.data.PictureRepository;
 
 /**

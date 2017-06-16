@@ -6,4 +6,5 @@
     <color name="white">#FFFFFF</color>
     <color name="lightBlue">#2ACBE1</color>
     <color name="darkGrey">#3c3f41</color>
+    <color name="trans_black">#70000000</color>
 </resources>

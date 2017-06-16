@@ -5,8 +5,10 @@ import android.content.Intent;
 import java.util.List;
 import javax.inject.Inject;
 import swift.com.camera.beautify.BeautifyActivity;
-import swift.com.camera.data.PictureBean;
+import swift.com.camera.data.PictureInfo;
 import swift.com.camera.data.PictureRepository;
+import swift.com.camera.data.PicturesFolder;
+
 import static swift.com.camera.data.PictureDataSource.*;
 
 /**
@@ -16,7 +18,7 @@ import static swift.com.camera.data.PictureDataSource.*;
 class AlbumPresenter implements AlbumContract.Presenter {
     private PictureRepository mPictureRepository;
     private AlbumContract.View mAlbumView;
-    private List<PictureBean> mImagesBean;
+    private List<PictureInfo> mImagesBean;
     @Inject
     public AlbumPresenter(PictureRepository repository, AlbumContract.View albumView){
         mPictureRepository = repository;
@@ -38,25 +40,28 @@ class AlbumPresenter implements AlbumContract.Presenter {
 
 
     @Override
-    public void getImagesList() {
+    public void loadImages() {
         mPictureRepository.loadPicture(new LoadPictureCallBack() {
             @Override
-            public void onPictureLoaded(List<PictureBean> pictureBeanList) {
-                if(pictureBeanList != null){
-                    mAlbumView.pictureBeanLoaded(pictureBeanList);
+            public void onPictureLoaded(PicturesFolder picturesFolder) {
+                if(picturesFolder != null){
+                    mAlbumView.showFolderList(picturesFolder);
+                } else {
+                    this.onLoadFailed();
                 }
             }
 
             @Override
             public void onLoadFailed() {
+                mAlbumView.showNoPictures();
             }
         });
     }
 
     @Override
-    public void toBeaytifyActivity(PictureBean pictureBean) {
+    public void toBeaytifyActivity(PictureInfo PictureInfo) {
         Intent intent = new Intent((Context) mAlbumView, BeautifyActivity.class);
-        intent.putExtra("PictureBean", pictureBean);
+        intent.putExtra("PictureInfo", PictureInfo);
         ((Context) mAlbumView).startActivity(intent);
     }
 }

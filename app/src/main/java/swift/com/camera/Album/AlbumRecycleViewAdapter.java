@@ -6,7 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import java.util.List;
 import javax.inject.Inject;
-import swift.com.camera.data.PictureBean;
+import swift.com.camera.data.PictureInfo;
 import swift.com.camera.utils.ImageLoad.GlideImageLoader;
 import swift.com.camera.utils.ImageLoad.ImageLoader;
 import static dagger.internal.Preconditions.checkNotNull;
@@ -18,11 +18,11 @@ import static dagger.internal.Preconditions.checkNotNull;
 public class AlbumRecycleViewAdapter extends RecyclerView.Adapter<
         AlbumRecycleViewAdapter.ImageViewHolder>{
     private AlbumActivity mContext;
-    private List<PictureBean> mPictureBeanList;
+    private List<PictureInfo> mPictureInfoList;
     private ImageLoader mImageLoader;
-    public AlbumRecycleViewAdapter(List<PictureBean> list, Context context){
+    public AlbumRecycleViewAdapter(List<PictureInfo> list, Context context){
         super();
-        mPictureBeanList = list;
+        mPictureInfoList = list;
         mContext = (AlbumActivity)context;
         mImageLoader = GlideImageLoader.getInstance(context);
 
@@ -37,19 +37,19 @@ public class AlbumRecycleViewAdapter extends RecyclerView.Adapter<
     @Override
     public void onBindViewHolder(ImageViewHolder holder, int position) {
         // 根据显示的宽高获取相应尺寸的图片
-        mImageLoader.getAdapteImage(mPictureBeanList.get(position).getImagePath(),
+        mImageLoader.getAdapteImage(mPictureInfoList.get(position).getImagePath(),
                 holder.mSivItem.getImageView());
-//        mContext.setImage(mPictureBeanList.get(position).getImagePath(),
+//        mContext.setImage(mPictureInfoList.get(position).getImagePath(),
 //                holder.mSivItem.getImageView());
     }
 
     @Override
     public int getItemCount() {
-        return mPictureBeanList.size();
+        return mPictureInfoList.size();
     }
 
-    public void onDataChaged(List<PictureBean> mImageList) {
-        mPictureBeanList = checkNotNull(mImageList);
+    public void onDataChaged(List<PictureInfo> mImageList) {
+        mPictureInfoList = checkNotNull(mImageList);
         notifyDataSetChanged();
     }
 

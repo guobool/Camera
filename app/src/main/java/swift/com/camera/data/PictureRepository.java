@@ -4,9 +4,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Handler;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import java.util.ArrayList;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import static dagger.internal.Preconditions.checkNotNull;
@@ -17,11 +15,12 @@ import static dagger.internal.Preconditions.checkNotNull;
 @Singleton
 public class PictureRepository implements PictureDataSource {
     private Context mContext;
-    private ArrayList<PictureBean> mPictureList;
+    private PicturesFolder mPicturesFolder;
+    //private ArrayList<PictureInfo> mPictureList;
     @Inject
     public PictureRepository(@NonNull Context context) {
         mContext = context;
-        mPictureList = new ArrayList<PictureBean>();
+        mPicturesFolder = new PicturesFolder(); // 使用目录作为key，存放图片信息的List为值
     }
 
     @Override
@@ -32,20 +31,23 @@ public class PictureRepository implements PictureDataSource {
             @Override
             public void run() {
                 ContentResolver mContentReslver = mContext.getContentResolver();
-                Cursor mCursor = mContentReslver.query(LOCAL_IMAGE_URI, null, LOCAL_QUERY_CRITERIA,
-                        LOCAL_QUERY_VALUE, LOCAL_QUERY_ATTR);
-                if(mCursor != null){
-                    PictureBean mPicture;
+
+                Cursor mCursor = mContentReslver.query(LOCAL_IMAGE_URI, LOCAL_GUERY_ATTRIBUTE, null,
+                        null, LOCAL_QUERY_ATTR);
+                if(mCursor != null) {
+                    PictureInfo pictureInfo;
                     while(mCursor.moveToNext()){
                         // 获取图片路径
-                        String path = mCursor.getString(mCursor.getColumnIndex(MediaStore.Images.Media.DATA));
-                        mPicture = new PictureBean(path);
-                        mPictureList.add(mPicture);
+                        String path = mCursor.getString(0);
+                        String name = mCursor.getString(1); // 文件名和后缀
+                        int date = mCursor.getInt(2);
+                        pictureInfo = new PictureInfo(path, name, date);
+                        mPicturesFolder.add(pictureInfo);
                     }
                     mCursor.close();
                 }
-                if(mPictureList.size() != 0) {
-                    loadCallBack.onPictureLoaded(mPictureList);
+                if(mPicturesFolder.size() != 0) {
+                    loadCallBack.onPictureLoaded(mPicturesFolder);
                 }
             }
         });

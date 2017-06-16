@@ -3,7 +3,8 @@ package swift.com.camera.Album;
 import android.widget.ImageView;
 import java.util.List;
 import swift.com.camera.BaseView;
-import swift.com.camera.data.PictureBean;
+import swift.com.camera.data.PictureInfo;
+import swift.com.camera.data.PicturesFolder;
 
 /**
  * Created by bool on 17-4-18.
@@ -14,16 +15,18 @@ public interface AlbumContract {
 
         void toProcessingActivity();
 
-        void toBeautifyActivity(PictureBean pictureBean);
+        void toBeautifyActivity(PictureInfo PictureInfo);
 
-        void pictureBeanLoaded(List<PictureBean> pictureBeanList);
+        void showFolderList(PicturesFolder picturesFolder);
+
+        void showNoPictures();
     }
 
     interface Presenter {
         void toProcessingActivity();
 
-        void getImagesList();
-
-        void toBeaytifyActivity(PictureBean pictureBean);
+        void toBeaytifyActivity(PictureInfo PictureInfo);
+        
+        void loadImages();
     }
 }

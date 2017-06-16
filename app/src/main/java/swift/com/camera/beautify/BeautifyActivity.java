@@ -7,12 +7,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
 
 import javax.inject.Inject;
-
-import swift.com.camera.Album.AlbumPresenterModule;
-import swift.com.camera.Album.DaggerAlbumComponent;
 import swift.com.camera.R;
 import swift.com.camera.TheApplication;
-import swift.com.camera.data.PictureBean;
+import swift.com.camera.data.PictureInfo;
 import swift.com.camera.utils.ImageLoad.GlideImageLoader;
 import swift.com.camera.utils.ImageLoad.ImageLoader;
 
@@ -31,7 +28,7 @@ public class BeautifyActivity extends AppCompatActivity implements BeautifyContr
         super.onCreate(savedInstancesState);
         setContentView(R.layout.activity_beautify);
         mIvBeautifyImage = (ImageView)findViewById(R.id.ivBeautifyImage);
-        PictureBean mPictureBean = (PictureBean) getIntent().getSerializableExtra("PictureBean");
+        PictureInfo mPictureInfo = (PictureInfo) getIntent().getSerializableExtra("PictureInfo");
         mImageLoader = GlideImageLoader.getInstance(this);
         // 注入
         DaggerBeautifyComponent.builder()
@@ -40,9 +37,9 @@ public class BeautifyActivity extends AppCompatActivity implements BeautifyContr
                 .build()
                 .inject(this);
 
-        if(mPictureBean != null){
+        if(mPictureInfo != null){
             //获取原图
-            mImageLoader.getOriginalImage(mPictureBean.getImagePath(), mIvBeautifyImage);
+            mImageLoader.getOriginalImage(mPictureInfo.getImagePath(), mIvBeautifyImage);
         }
     }
 

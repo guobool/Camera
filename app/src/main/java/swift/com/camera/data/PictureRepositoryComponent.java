@@ -1,7 +1,6 @@
 package swift.com.camera.data;
 
 import javax.inject.Singleton;
-
 import dagger.Component;
 import swift.com.camera.ApplicationModule;
 

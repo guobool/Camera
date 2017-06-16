@@ -9,6 +9,7 @@
     <string name="myAlbum">我的相册</string>
     <string name="otherAlbum">其他相册</string>
     <string name="privacyAlbum">私密相册</string>
+    <string name="select_count">已选(%1$s/9)</string>
     <string name="optimization">智能优化</string>
     <string name="camera">相机</string>
     <string name="processing">加工</string>
@@ -23,4 +24,5 @@
     <string name="all_image">全部图片</string>
     <string name="selected_ok">确定 (%1$s/%2$s)</string>
     <string name="grant_advice_read_album">请授予应用读取权限后再试</string>
+    <string name="complete_select">完成</string>
 </resources>

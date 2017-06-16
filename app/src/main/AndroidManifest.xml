@@ -29,6 +29,7 @@
         <activity android:name=".ui.activity.CameraActivity"/>
         <activity android:name=".processing.ProcessingActivity"/>
         <activity android:name=".Album.AlbumActivity"/>
+        <activity android:name=".select.AlbumActivity"/>
         <activity android:name=".beautify.BeautifyActivity"/>
     </application>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
