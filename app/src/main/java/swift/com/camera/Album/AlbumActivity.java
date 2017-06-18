@@ -56,6 +56,8 @@ public class AlbumActivity extends AppCompatActivity implements AlbumContract.Vi
     @Inject AlbumPresenter mPresenter;
     private PicturesFolder mPictureFolder;
     private RecyclerView mRvPhotoList;
+    private RecyclerView mRvSelectedPhotosView;
+    private List mOnShowPhotosList;
     private AlbumRecycleViewAdapter mRecycleAdaptere;
     private ViewPager mVpPageContainer;
     private FrameLayout mFlViewContainer;
@@ -102,11 +104,20 @@ public class AlbumActivity extends AppCompatActivity implements AlbumContract.Vi
         } else {
             mPresenter.loadImages();
         }
+        mRvSelectedPhotosView = (RecyclerView)findViewById(R.id.rv_selected_photos);
+        mRvSelectedPhotosView.setLayoutManager(new GridLayoutManager(this, 4)); //每行4列
+        mRecycleAdaptere = new AlbumRecycleViewAdapter(new ArrayList<PictureInfo>(0),
+                AlbumActivity.this);
+        mRvPhotoList.setAdapter(mRecycleAdaptere);
+        mRvPhotoList.addItemDecoration(new DivideItemDecoration(this));
+
         LayoutInflater inflater = getLayoutInflater();
-        View view = inflater.inflate(R.layout.album_folder_list, null);
+        View view = inflater.inflate(R.layout.album_select_view, null);
         final List<View> viewList = new ArrayList<>();
         viewList.add(view);
-        view = inflater.inflate(R.layout.album_select_view, null);
+
+        mRvPhotoList = (RecyclerView)view.findViewById(R.id.rv_photos_list);
+        view = inflater.inflate(R.layout.album_folder_list, null);
         viewList.add(view);
         PagerAdapter pagerAdapter = new PagerAdapter() {
 
@@ -139,14 +150,6 @@ public class AlbumActivity extends AppCompatActivity implements AlbumContract.Vi
             }
         };
         mVpPageContainer.setAdapter(pagerAdapter);
-        //----------------------------RecycleView------------------------
-//        mRvPhotoList = (RecyclerView)findViewById(R.id.rvPhotoList);
-//        mRvPhotoList.setLayoutManager(new GridLayoutManager(this,3)); //每行3列
-//        mRecycleAdaptere = new AlbumRecycleViewAdapter(new ArrayList<PictureInfo>(0),
-//                AlbumActivity.this);
-//        mRvPhotoList.setAdapter(mRecycleAdaptere);
-//        mRvPhotoList.addItemDecoration(new DivideItemDecoration(this));
-//        mPresenter.getImagesList();
     }
 
     @Override
@@ -176,7 +179,16 @@ public class AlbumActivity extends AppCompatActivity implements AlbumContract.Vi
         mPictureFolder = picturesFolder;
         mFlViewContainer.setVisibility(View.VISIBLE);
         mTvNoImages.setVisibility(View.GONE);
-        //mRecycleAdaptere.onDataChaged(mImageList);
+
+        //----------------------------RecycleView------------------------
+        mRvPhotoList.setLayoutManager(new GridLayoutManager(this, 4)); //每行4列
+        AlbumRecycleViewAdapter gridAdapter = new AlbumRecycleViewAdapter(new ArrayList<PictureInfo>(0),
+                AlbumActivity.this);
+        mRvPhotoList.setAdapter(gridAdapter);
+        mRvPhotoList.addItemDecoration(new DivideItemDecoration(this));
+        //mPresenter.getImagesList();
+        mOnShowPhotosList = picturesFolder.get("/storage/emulated/0/DCIM/Camera");
+        gridAdapter.onDataChaged(mOnShowPhotosList);
     }
 
     @Override
@@ -186,6 +198,11 @@ public class AlbumActivity extends AppCompatActivity implements AlbumContract.Vi
     }
 
     public void onItemSelected(int index) {
-        //mPresenter.toBeaytifyActivity(mImageList.get(index));
+        mPresenter.toBeaytifyActivity((PictureInfo)mOnShowPhotosList.get(index));
     }
+
+    public void onSelectChanged(List<PictureInfo> pictureList) {
+        mRecycleAdaptere.onDataChaged(pictureList);
+    }
+
 }

@@ -39,8 +39,6 @@ public class AlbumRecycleViewAdapter extends RecyclerView.Adapter<
         // 根据显示的宽高获取相应尺寸的图片
         mImageLoader.getAdapteImage(mPictureInfoList.get(position).getImagePath(),
                 holder.mSivItem.getImageView());
-//        mContext.setImage(mPictureInfoList.get(position).getImagePath(),
-//                holder.mSivItem.getImageView());
     }
 
     @Override

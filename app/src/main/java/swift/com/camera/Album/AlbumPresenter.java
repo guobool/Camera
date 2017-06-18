@@ -8,7 +8,6 @@ import swift.com.camera.beautify.BeautifyActivity;
 import swift.com.camera.data.PictureInfo;
 import swift.com.camera.data.PictureRepository;
 import swift.com.camera.data.PicturesFolder;
-
 import static swift.com.camera.data.PictureDataSource.*;
 
 /**

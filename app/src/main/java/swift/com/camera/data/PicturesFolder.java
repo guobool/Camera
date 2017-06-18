@@ -28,7 +28,7 @@ public class PicturesFolder extends HashMap<String, List> {
     public boolean add(PictureInfo pictureInfo) {
         File imageFile = new File(pictureInfo.getImagePath());
         if( imageFile.exists()) {
-            String filderName = imageFile.getAbsolutePath(); // 使用文件夹名作为Map的key
+            String filderName = imageFile.getParent(); // 使用文件夹名作为Map的key
             List<PictureInfo> pictureInfoList;
             if ( this.containsKey(filderName)) {
                 pictureInfoList = (ArrayList)this.get(filderName);

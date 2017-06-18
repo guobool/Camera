@@ -40,13 +40,12 @@ public class DivideItemDecoration extends RecyclerView.ItemDecoration {
         int itemPosition = parent.getChildAdapterPosition(view);
         if (itemPosition > (itemCount - (itemCount % spanCount))) {
             // 如果是最后一行，则不需要需要绘制底部
-            outRect.set(0, 0, 20, 0);
+            outRect.set(0, 0, 10, 0);
         } else if ((itemPosition + 1) % spanCount == 0) {
             // 如果是最后一列，则不需要绘制右边
-            outRect.set(0, 0, 0, 20);
+            outRect.set(0, 0, 0, 10);
         } else {
-            outRect.set(0, 0, 20,
-                    20);
+            outRect.set(0, 0, 10, 10);
         }
     }
 
