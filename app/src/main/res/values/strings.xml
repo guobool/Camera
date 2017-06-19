@@ -25,4 +25,6 @@
     <string name="selected_ok">确定 (%1$s/%2$s)</string>
     <string name="grant_advice_read_album">请授予应用读取权限后再试</string>
     <string name="complete_select">完成</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
 </resources>

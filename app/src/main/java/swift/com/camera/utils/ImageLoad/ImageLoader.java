@@ -3,6 +3,8 @@ package swift.com.camera.utils.ImageLoad;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
 
+import swift.com.camera.Album.SelectImageItem;
+
 /**
  * Created by bool on 17-5-31.
  */

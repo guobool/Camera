@@ -17,6 +17,8 @@
         android:layout_gravity="end"
         android:layout_width="25dp"
         android:layout_height="25dp"
-        android:button="@drawable/pictures_select_icon" />
+        android:layout_margin="5dp"
+        android:background="@drawable/pictures_select_icon"
+        android:button="@null"/>
 
 </FrameLayout>

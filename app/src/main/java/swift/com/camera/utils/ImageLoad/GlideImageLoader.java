@@ -8,6 +8,8 @@ import com.bumptech.glide.Glide;
 
 import java.util.concurrent.ExecutionException;
 
+import swift.com.camera.Album.SelectImageItem;
+
 
 /**
  * Created by bool on 17-5-31.

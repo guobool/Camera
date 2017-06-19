@@ -76,14 +76,16 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="35dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                >
 
                 <TextView
-                    android:id="@+id/tv_select_count"
+                    android:id="@+id/tv_selected_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:text="@string/select_count" />
+                    android:text="@string/select_count"
+                    android:textColor="@android:color/white"/>
 
                 <ImageButton
                     android:id="@+id/btn_show_select"
@@ -99,14 +101,15 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:background="@android:color/transparent"
-                    android:text="@string/complete_select" />
+                    android:text="@string/complete_select"
+                    android:textColor="@android:color/white"/>
             </LinearLayout>
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/rv_selected_photos"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
+                android:layout_height="match_parent"
+                />
         </LinearLayout>
 
     </FrameLayout>

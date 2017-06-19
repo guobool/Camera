@@ -1,36 +1,30 @@
 package swift.com.camera.Album;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.util.ArrayMap;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import swift.com.camera.R;
@@ -39,8 +33,6 @@ import swift.com.camera.beautify.BeautifyActivity;
 import swift.com.camera.data.PictureInfo;
 import swift.com.camera.data.PicturesFolder;
 import swift.com.camera.processing.ProcessingActivity;
-import swift.com.camera.utils.ImageLoad.ImageLoader;
-
 import static dagger.internal.Preconditions.checkNotNull;
 
 
@@ -58,10 +50,11 @@ public class AlbumActivity extends AppCompatActivity implements AlbumContract.Vi
     private RecyclerView mRvPhotoList;
     private RecyclerView mRvSelectedPhotosView;
     private List mOnShowPhotosList;
-    private AlbumRecycleViewAdapter mRecycleAdaptere;
+    private SelectedPictureGridAdapter mSelectedPictureGridAdapter;
     private ViewPager mVpPageContainer;
     private FrameLayout mFlViewContainer;
     private TextView mTvNoImages;
+    private TextView mTvSelectedCount;
     @Override
     protected void onCreate(final Bundle savedInstancesStace){
         super.onCreate(savedInstancesStace);
@@ -106,17 +99,20 @@ public class AlbumActivity extends AppCompatActivity implements AlbumContract.Vi
         }
         mRvSelectedPhotosView = (RecyclerView)findViewById(R.id.rv_selected_photos);
         mRvSelectedPhotosView.setLayoutManager(new GridLayoutManager(this, 4)); //每行4列
-        mRecycleAdaptere = new AlbumRecycleViewAdapter(new ArrayList<PictureInfo>(0),
+        mSelectedPictureGridAdapter = new SelectedPictureGridAdapter(new ArrayMap<Integer, PictureInfo>(5),
                 AlbumActivity.this);
-        mRvPhotoList.setAdapter(mRecycleAdaptere);
-        mRvPhotoList.addItemDecoration(new DivideItemDecoration(this));
+        mRvSelectedPhotosView.setAdapter(mSelectedPictureGridAdapter);
+        mTvSelectedCount = (TextView)findViewById(R.id.tv_selected_count);
+        String selectedStringFormat = getString(R.string.select_count);
+        String selectedString = String.format(selectedStringFormat, Integer.toString(0));
+        mTvSelectedCount.setText(selectedString);
 
         LayoutInflater inflater = getLayoutInflater();
         View view = inflater.inflate(R.layout.album_select_view, null);
+        mRvPhotoList = (RecyclerView)view.findViewById(R.id.rv_photos_list);
         final List<View> viewList = new ArrayList<>();
         viewList.add(view);
 
-        mRvPhotoList = (RecyclerView)view.findViewById(R.id.rv_photos_list);
         view = inflater.inflate(R.layout.album_folder_list, null);
         viewList.add(view);
         PagerAdapter pagerAdapter = new PagerAdapter() {
@@ -201,8 +197,11 @@ public class AlbumActivity extends AppCompatActivity implements AlbumContract.Vi
         mPresenter.toBeaytifyActivity((PictureInfo)mOnShowPhotosList.get(index));
     }
 
-    public void onSelectChanged(List<PictureInfo> pictureList) {
-        mRecycleAdaptere.onDataChaged(pictureList);
+    public void onSelectChanged(ArrayMap<Integer, PictureInfo> pictureMap) {
+        int selectedNum = pictureMap.size();
+        String selectedStringFormat = getString(R.string.select_count);
+        String selectedString = String.format(selectedStringFormat, Integer.toString(selectedNum));
+        mTvSelectedCount.setText(selectedString);
+        mSelectedPictureGridAdapter.onDataChaged(pictureMap);
     }
-
 }
