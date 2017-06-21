@@ -13,7 +13,8 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         app:srcCompat="@mipmap/background"
-        android:contentDescription="显示" />
+        android:contentDescription="显示"
+        tools:ignore="HardcodedText" />
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -23,13 +24,12 @@
 
         <Button
             android:id="@+id/button12"
-            android:layout_marginLeft="@id/button9"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:background="@drawable/vector_drawable_rectangle"
-            android:textcolor="@color/white"
+            android:textColor="@color/white"
             android:text="板式"
-            tools:ignore="ButtonStyle"
+            tools:ignore="ButtonStyle,HardcodedText"
             android:layout_marginStart="18dp"
             android:layout_alignParentTop="true"
             android:layout_toEndOf="@+id/button9" />
@@ -40,18 +40,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/vector_drawable_rectangle"
-            android:textcolor="@color/white"
+            android:textColor="@color/white"
             android:text="边框"
-            tools:ignore="ButtonStyle" />
+            tools:ignore="ButtonStyle,HardcodedText" />
 
         <Button
             android:id="@+id/button8"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/vector_drawable_rectangle"
-            android:textcolor="@color/white"
+            android:textColor="@color/white"
             android:text="背景"
-            tools:ignore="ButtonStyle"
+            tools:ignore="ButtonStyle,HardcodedText"
             android:layout_alignParentTop="true"
             android:layout_toStartOf="@+id/button9"
             android:layout_marginEnd="16dp" />
@@ -68,7 +68,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_margin="15dp"
-            android:src="@drawable/vector_drawable_frame" />
+            android:src="@drawable/vector_drawable_frame"
+            tools:ignore="ContentDescription" />
 
         <android.support.v7.widget.RecyclerView
             android:layout_width="match_parent"
