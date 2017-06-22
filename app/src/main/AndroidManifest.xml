@@ -20,8 +20,9 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/NoTitle">
-        <activity android:name=".MainActivity">
+        android:theme="@style/NoTitle"
+        android:hardwareAccelerated="false">
+        <activity android:name=".puzzle.PuzzleActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -31,18 +32,17 @@
         <activity android:name=".ui.activity.CameraActivity" />
         <activity android:name=".processing.ProcessingActivity" />
         <activity android:name=".Album.AlbumActivity" />
-        <activity android:name=".select.AlbumActivity" />
         <activity android:name=".beautify.BeautifyActivity" />
 
-        <receiver android:name="values.SelectedImageView">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
+        <!--<receiver android:name="values.SelectedImageView">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />-->
+            <!--</intent-filter>-->
 
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/selected_image_view_info" />
-        </receiver>
+            <!--<meta-data-->
+                <!--android:name="android.appwidget.provider"-->
+                <!--android:resource="@xml/selected_image_view_info" />-->
+        <!--</receiver>-->
     </application>
 
 </manifest>

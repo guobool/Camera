@@ -1,7 +1,12 @@
 package swift.com.camera.utils.puzzle;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
+import android.graphics.Region;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
@@ -12,6 +17,7 @@ import android.graphics.drawable.Drawable;
 public class Polygon {
     protected PointF[] pointFs;
     protected Line[] lines;
+    protected Bitmap mBitmap;
     public Polygon(PointF... pointFs) {
         assert pointFs != null: "参数为空";
         assert pointFs.length >= 3: "点个数不能少于三个";
@@ -32,6 +38,20 @@ public class Polygon {
     }
     public Line[] getLines() {
         return lines;
+    }
+
+    public void setBitmap(Bitmap bitmap) {
+        mBitmap = bitmap;
+    }
+
+    public void draw(Canvas canvas, Paint paint) {
+        Path path = new Path();
+        for (int i = 0; i < pointFs.length; i++) {
+            path.lineTo(pointFs[i].x, pointFs[i].y);
+        }
+        path.close();
+        canvas.clipPath(path, Region.Op.INTERSECT); // 切割丢弃边缘外的图像
+        canvas.drawBitmap(mBitmap, new Matrix(), paint);
     }
 
 }
