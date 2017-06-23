@@ -7,9 +7,9 @@
     android:orientation="vertical"
     android:background="@color/darkGrey">
 
-    <swift.com.camera.utils.puzzle.PolygonView
+    <swift.com.camera.utils.puzzle.PuzzleView
         android:id="@+id/pv_puzzle"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         app:srcCompat="@mipmap/background"

@@ -5,8 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.PointF;
-import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -14,11 +12,10 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
-
-import java.util.ArrayList;
 import java.util.List;
+
+import static com.squareup.haha.guava.base.Joiner.checkNotNull;
 
 
 /**
@@ -26,18 +23,20 @@ import java.util.List;
  * 多边形视图，用于显示多个多边形的内容。
  */
 
-public class PolygonView extends View {
+public class PuzzleView extends View {
     protected static final String TAG = "PolygonView";
-    private int mLineWidth = 4;
-    private Paint mPaint;
-    private Polygon[] mPolygons;
+    protected int mLineWidth = 4;
+    protected Paint mPaint;
+    protected Polygon[] mPolygons;
+    protected float mHeightRatio, mWidthRatio;
+    protected int mLeft, mTop, mRight, mBottom;
     //private List<BitmapDrawable> mBitmapDrawableList;
 
     /**
      * 一般在直接New一个View的时候调用。
      * @param context
      */
-    public PolygonView(Context context) {
+    public PuzzleView(Context context) {
         this(context, null, 0);
     }
 
@@ -46,18 +45,18 @@ public class PolygonView extends View {
      * @param context
      * @param attrs
      */
-    public PolygonView(Context context, @Nullable AttributeSet attrs) {
+    public PuzzleView(Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public PolygonView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public PuzzleView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaint.setColor(Color.WHITE);
-        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         mPaint.setStrokeWidth(mLineWidth);
-        //mBitmapDrawableList = new ArrayList<>();
+        mHeightRatio = mWidthRatio = 1;
     }
 
     /**
@@ -70,9 +69,9 @@ public class PolygonView extends View {
      */
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public PolygonView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public PuzzleView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-        mPaint = new Paint();
+        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setAntiAlias(true);
         mPaint.setColor(Color.WHITE);
         mPaint.setStrokeWidth(mLineWidth);
@@ -86,23 +85,39 @@ public class PolygonView extends View {
 
         int heightsize = MeasureSpec.getSize(heightMeasureSpec);    //取出高度的确切数值
         int heightmode = MeasureSpec.getMode(heightMeasureSpec);    //取出高度的测量模式
+        float left = getLeft();
+        float top = getTop();
+        float right = getRight();
+        float button = getBottom();
 
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
+        int newW, newH;
+        if (h * mHeightRatio > w * mWidthRatio) {
+            newH = (int)(w * mHeightRatio / mWidthRatio);
+            mTop = (h - newH) / 2 + super.getTop();
+            mBottom = super.getBottom() - mTop;
+            mLeft = super.getLeft();
+            mRight = super.getRight();
+        } else {
+            newW = (int)(h * mWidthRatio / mHeightRatio);
+            mLeft = (w - newW) / 2 + super.getLeft();
+            mRight = super.getRight() - mLeft;
+            mTop = super.getTop();
+            mBottom = super.getBottom();
+        }
 
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-//        // 绘制圆弧
-//        RectF rectF = new RectF(100,100,800,400);
-//        mPaint.setColor(Color.BLUE);
-//        canvas.drawArc(rectF,0,90,false,mPaint);
-        for (int i = 0; i < mPolygons.length; i++) {
+        mPaint.setColor(Color.WHITE);
+        canvas.drawRect(mLeft, mTop, mRight, mBottom, mPaint);
+        for (int i = 0; mPolygons != null  && i < mPolygons.length; i++) {
            // mPolygons[i].setBitmap(mBitmapDrawableList.get(i).getBitmap());
             mPolygons[i].draw(canvas, mPaint);
         }
@@ -155,6 +170,39 @@ public class PolygonView extends View {
         }
     }
 
+    /**
+     * 设置视图的长宽比, 侧函数必须在设置内部多边形位置之前调用
+     * @param height　长度比例
+     * @param whith　宽度比例
+     */
+    public void setAspectRatio(int height, int whith) {
+        if (height != 0 && height != 00) {
+            mHeightRatio = height;
+            mWidthRatio = whith;
+        }
+    }
 
+    public int getContainLeft() {
+        return mLeft;
+    }
 
+    public int getContainTop() {
+        return mTop;
+    }
+
+    public int getContainRight() {
+        return mRight;
+    }
+
+    public int getContainBottom() {
+        return mBottom;
+    }
+
+    public int getContainHeight() {
+        return mBottom - mTop;
+    }
+
+    public int getContainWidth() {
+        return mRight - mLeft;
+    }
 }
