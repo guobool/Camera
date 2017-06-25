@@ -2,6 +2,7 @@ package swift.com.camera.utils.puzzle;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -15,6 +16,8 @@ import android.util.AttributeSet;
 import android.view.View;
 import java.util.List;
 
+import swift.com.camera.R;
+
 import static com.squareup.haha.guava.base.Joiner.checkNotNull;
 
 
@@ -24,12 +27,16 @@ import static com.squareup.haha.guava.base.Joiner.checkNotNull;
  */
 
 public class PuzzleView extends View {
+    enum Direction {
+        HORIZONTAL, VERTICAL
+    }
     protected static final String TAG = "PolygonView";
-    protected int mLineWidth = 4;
+    protected int mLineWidth = 0;
     protected Paint mPaint;
     protected Polygon[] mPolygons;
     protected float mHeightRatio, mWidthRatio;
     protected int mLeft, mTop, mRight, mBottom;
+    protected Drawable mDrawable;
     //private List<BitmapDrawable> mBitmapDrawableList;
 
     /**
@@ -57,6 +64,8 @@ public class PuzzleView extends View {
         mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         mPaint.setStrokeWidth(mLineWidth);
         mHeightRatio = mWidthRatio = 1;
+        mDrawable = new BitmapDrawable(getResources(), BitmapFactory.decodeResource(getResources(),
+                R.mipmap.background));
     }
 
     /**
@@ -116,6 +125,8 @@ public class PuzzleView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         mPaint.setColor(Color.WHITE);
+        mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        mPaint.setStrokeWidth(mLineWidth);
         canvas.drawRect(mLeft, mTop, mRight, mBottom, mPaint);
         for (int i = 0; mPolygons != null  && i < mPolygons.length; i++) {
            // mPolygons[i].setBitmap(mBitmapDrawableList.get(i).getBitmap());
@@ -204,5 +215,8 @@ public class PuzzleView extends View {
 
     public int getContainWidth() {
         return mRight - mLeft;
+    }
+    public void setBorderWidth(int width) {
+        //mLineWidth = width;
     }
 }

@@ -38,24 +38,23 @@ public class PuzzleActivity extends AppCompatActivity implements PuzzleContract.
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
             @Override
             public void onGlobalLayout() {
-                float left = mPuzzleView.getContainLeft();
-                float top = mPuzzleView.getContainTop();
-                float right = mPuzzleView.getContainRight();
-                float button = mPuzzleView.getContainBottom();
+                float left = mPuzzleView.getContainLeft()+10;
+                float top = mPuzzleView.getContainTop()+10;
+                float right = mPuzzleView.getContainRight()-10;
+                float button = mPuzzleView.getContainBottom()-10;
                 PointF point = new PointF(left, top);
                 PointF point2 = new PointF(right, top);
                 PointF point3 = new PointF(right, button);
 
                 PointF point4 = new PointF(left, button);
                 Bitmap b = BitmapFactory.decodeResource(getResources(), R.mipmap.background);
+
                 Polygon polygon = new Polygon(new BitmapDrawable(getResources(), b), point, point2, point3);
                 Bitmap c = BitmapFactory.decodeResource(getResources(), R.mipmap.main_flow);
                 Polygon polygon1 = new Polygon(new BitmapDrawable(getResources(), c), point, point3, point4);
 
-                //polygon.setBitmap(b);
-
-                //polygon1.setBitmap(c);
                 mPuzzleView.setPolygons(polygon, polygon1);
+                mPuzzleView.setBorderWidth(20);
                 mPuzzleView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                 mPuzzleView.invalidate();
             }
@@ -64,37 +63,7 @@ public class PuzzleActivity extends AppCompatActivity implements PuzzleContract.
 
     @Override
     public void setPresenter(PuzzleContract.Presenter presenter) {
-        float left = mPuzzleView.getLeft();
-        float top = mPuzzleView.getTop();
-        float right = mPuzzleView.getRight();
-        float button = mPuzzleView.getBottom();
-
+        mPresenter = presenter;
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        float left = mPuzzleView.getLeft();
-        float top = mPuzzleView.getTop();
-        float right = mPuzzleView.getRight();
-        float button = mPuzzleView.getBottom();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        float left = mPuzzleView.getLeft();
-        float top = mPuzzleView.getTop();
-        float right = mPuzzleView.getRight();
-        float button = mPuzzleView.getBottom();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        float left = mPuzzleView.getLeft();
-        float top = mPuzzleView.getTop();
-        float right = mPuzzleView.getRight();
-        float button = mPuzzleView.getBottom();
-    }
 }

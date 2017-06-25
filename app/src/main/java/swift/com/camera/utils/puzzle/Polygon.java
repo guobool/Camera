@@ -3,6 +3,7 @@ package swift.com.camera.utils.puzzle;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
@@ -26,10 +27,7 @@ public class Polygon {
     protected PointF[] pointFs;
     protected Drawable mDrawable;
     protected Bitmap mBitmap;
-    protected Context mContext;
-    public Polygon(@NonNull BitmapDrawable drawable, PointF... pointFs) {
-        mDrawable = drawable;
-
+    public Polygon(PointF... pointFs) {
         assert pointFs != null: "参数为空";
         assert pointFs.length >= 3: "点个数不能少于三个";
 
@@ -37,6 +35,14 @@ public class Polygon {
         this.pointFs = pointFs;
     }
 
+    public Polygon(@NonNull BitmapDrawable drawable, PointF... pointFs) {
+        mDrawable = drawable;
+        assert pointFs != null: "参数为空";
+        assert pointFs.length >= 3: "点个数不能少于三个";
+
+        // TODO: 17-6-21 添加相邻两直线不重合，任意两直线不相交的检测。
+        this.pointFs = pointFs;
+    }
     public int getVertexNum() {
         return pointFs.length;
     }
@@ -51,25 +57,25 @@ public class Polygon {
 
     public void draw(Canvas canvas, Paint paint) {
         canvas.save();
+        paint.setStyle(Paint.Style.FILL);
+        paint.setStrokeWidth(20);
         Path path = new Path();
-        //.getClipBounds().clear
-        for (int i = 0; i < pointFs.length; i++) {
+        if (pointFs != null & pointFs.length != 0) {
+            path.moveTo(pointFs[0].x, pointFs[0].y);
+        }
+        for (int i = 1; i < pointFs.length; i++) {
             path.lineTo(pointFs[i].x, pointFs[i].y);
+            //canvas.drawLine(pointFs[i], pointFs[i%pointFs.length]);
         }
         path.close();
-        canvas.concat(new Matrix());
-        //paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        //paint.setStrokeWidth(20);
+        //canvas.drawPath(path, paint);
 
-        //mDrawable.setAlpha(alpha);
+        canvas.concat(new Matrix());
         canvas.clipPath(path); // 切割丢弃边缘外的图像
         mDrawable.setBounds(0, 126, 1080, 1206);
-        //canvas.drawBitmap(mBitmap, pointFs[0].x, pointFs[0].y, paint);
+        //canvas.drawBitmap(((BitmapDrawable)mDrawable).getBitmap(), new Matrix(), paint);
         mDrawable.draw(canvas);
-
-        //canvas.restore();
-        //paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-
-        //path.reset();
         canvas.restore();
     }
 
