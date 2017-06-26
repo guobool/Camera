@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="0dp"
-    tools:context="swift.com.camera.MainActivity"
+    tools:context="com.swift.camera.MainActivity"
     >
 
 

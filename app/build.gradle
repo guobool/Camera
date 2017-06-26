@@ -7,7 +7,7 @@ android {
     defaultConfig {
         targetCompatibility = '1.7'
         sourceCompatibility = '1.7'
-        applicationId "swift.com.camera"
+        applicationId "com.swift.camera"
         minSdkVersion 18
         targetSdkVersion 22
         versionCode 1

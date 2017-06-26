@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="0dp"
-    tools:context="swift.com.camera.MainActivity"
+    tools:context="com.swift.camera.MainActivity"
     >
 
 
@@ -35,11 +35,11 @@
             android:layout_weight="1"
             >
 
-            <swift.com.camera.ui.view.FunctionLayout
+            <com.swift.camera.ui.view.FunctionLayout
                 android:id="@+id/rlOneLeyBeautify"
                 />
 
-            <swift.com.camera.ui.view.FunctionLayout
+            <com.swift.camera.ui.view.FunctionLayout
                 android:id="@+id/rlBeautifyPictures"
                 />
 
@@ -51,15 +51,15 @@
             android:layout_height="match_parent"
             android:layout_weight="1">
 
-            <swift.com.camera.ui.view.FunctionLayout
+            <com.swift.camera.ui.view.FunctionLayout
                 android:id="@+id/rlPuzzle"
                 />
 
-            <swift.com.camera.ui.view.FunctionLayout
+            <com.swift.camera.ui.view.FunctionLayout
                 android:id="@+id/rlPictureInPicture"
                 >
 
-            </swift.com.camera.ui.view.FunctionLayout>
+            </com.swift.camera.ui.view.FunctionLayout>
         </TableRow>
     </TableLayout>
     <ImageButton
