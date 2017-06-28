@@ -2,7 +2,6 @@ package swift.com.camera.puzzle;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
@@ -10,8 +9,6 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ViewTreeObserver;
 import android.widget.SeekBar;
-
-import com.github.siyamed.shapeimageview.BubbleImageView;
 
 import javax.inject.Inject;
 import swift.com.camera.R;

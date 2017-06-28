@@ -35,7 +35,7 @@ public class PuzzleView extends View {
     protected float mHeightRatio, mWidthRatio;
     protected int mLeft, mTop, mRight, mBottom;
     protected Drawable mDrawable;
-    protected int mBorderWidth, mAngleRoundness;
+    protected int mBorderWidth = 10, mAngleRoundness;
     //private List<BitmapDrawable> mBitmapDrawableList;
 
     /**
@@ -125,7 +125,7 @@ public class PuzzleView extends View {
         super.onDraw(canvas);
         mPaint.setColor(Color.WHITE);
         mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        mPaint.setStrokeWidth(mLineWidth);
+        mPaint.setStrokeWidth(mBorderWidth);
         canvas.drawRect(mLeft, mTop, mRight, mBottom, mPaint);
         List<PointF> pointFList = new ArrayList<>();
         for (int i = 0; mPolygons != null  && i < mPolygons.length; i++) {

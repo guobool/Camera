@@ -46,17 +46,19 @@ public class Polygon {
 
         // TODO: 17-6-21 添加相邻两直线不重合，任意两直线不相交的检测。
         this.mPointFArray = pointFs;
-        mPath = new Path();
         mBezierDataPoint = new PointF[pointFs.length * 2];
-        initBezierDataPoint();
+        for(int i = 0; i < mBezierDataPoint.length; i++) {
+            mBezierDataPoint[i] = new PointF();
+        }
+        calculateBezierDataPoint();
+        mPath = new Path();
     }
-    protected void initBezierDataPoint(){
+    protected void calculateBezierDataPoint(){
         if ( mPointFArray == null) return ;
         double lambda = 0; // A(x1,y1),B(x2,y2),点P(x,y)分线段AB所成的比是λ
         //x=[x1＋λx2]/(1＋λ)
         //y=[y1＋λy2]/(1＋λ)
         PointF upperPoint, nextPoint;
-        //int pointNum = mPointFArray.length;
         for(int i = 0; i < mPointFArray.length; i++) {
             // 当前点之前插入的贝塞尔数据点的计算
             // 计算lambda
@@ -64,7 +66,7 @@ public class Polygon {
             lambda = mFillet / (Math.sqrt(Math.pow(mPointFArray[i].x - upperPoint.x, 2) +
                                             Math.pow(mPointFArray[i].y - upperPoint.y, 2)));
             // 计算当前点之前插入的点
-            mBezierDataPoint[i * 2] = new PointF();
+            //mBezierDataPoint[i * 2] = new PointF();
             mBezierDataPoint[i * 2].x = (float) ((mPointFArray[i].x + lambda * upperPoint.x) / (1 + lambda));
             mBezierDataPoint[i * 2].y = (float) ((mPointFArray[i].y + lambda * upperPoint.y) / (1 + lambda));
 
@@ -74,11 +76,9 @@ public class Polygon {
             lambda = mFillet / (Math.sqrt(Math.pow(mPointFArray[i].x - nextPoint.x, 2) +
                     Math.pow(mPointFArray[i].y - nextPoint.y, 2)));
             // 点位置
-            mBezierDataPoint[i * 2 + 1] = new PointF();
             mBezierDataPoint[i * 2 + 1].x = (float) ((mPointFArray[i].x + lambda * nextPoint.x) / (1 + lambda));
             mBezierDataPoint[i * 2 + 1].y = (float) ((mPointFArray[i].y + lambda * nextPoint.y) / (1 + lambda));
         }
-
     }
 
     /**
@@ -109,7 +109,9 @@ public class Polygon {
      */
     public void draw(Canvas canvas, Paint paint) {
         canvas.save();
+        calculateBezierDataPoint();
         paint.setStyle(Paint.Style.STROKE);
+        mPath.reset();
         float pointX = 0, pointY = 0;
         if (mPointFArray != null & mPointFArray.length != 0) {
             mPath.moveTo(mBezierDataPoint[0].x, mBezierDataPoint[0].y);
@@ -131,7 +133,7 @@ public class Polygon {
         mPath.close();
         // 先向重心收缩，收缩比例为：(width/2 - borderWidth) / (width / 2)
         canvas.scale((1080f-mBorderWidth*2)/1080, (1080f-mBorderWidth*2)/1080, pointX, pointY);
-        canvas.scale(1080f /(1080f + mBorderWidth), 1080f/(1080+mBorderWidth), 1080f/2, (1206+126)/2);
+        canvas.scale(1080f /(1080f + mBorderWidth/2), 1080f/(1080+mBorderWidth/2), 1080f/2, (1206+126)/2);
         canvas.concat(new Matrix());
         canvas.clipPath(mPath); // 切割丢弃边缘外的图像
         mDrawable.setBounds(0, 126, 1080, 1206);
