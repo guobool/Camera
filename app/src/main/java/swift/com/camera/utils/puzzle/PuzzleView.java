@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -14,12 +15,9 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.view.View;
+import java.util.ArrayList;
 import java.util.List;
-
 import swift.com.camera.R;
-
-import static com.squareup.haha.guava.base.Joiner.checkNotNull;
-
 
 /**
  * Created by bool on 17-6-21.
@@ -37,6 +35,7 @@ public class PuzzleView extends View {
     protected float mHeightRatio, mWidthRatio;
     protected int mLeft, mTop, mRight, mBottom;
     protected Drawable mDrawable;
+    protected int mBorderWidth, mAngleRoundness;
     //private List<BitmapDrawable> mBitmapDrawableList;
 
     /**
@@ -128,11 +127,13 @@ public class PuzzleView extends View {
         mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         mPaint.setStrokeWidth(mLineWidth);
         canvas.drawRect(mLeft, mTop, mRight, mBottom, mPaint);
+        List<PointF> pointFList = new ArrayList<>();
         for (int i = 0; mPolygons != null  && i < mPolygons.length; i++) {
-           // mPolygons[i].setBitmap(mBitmapDrawableList.get(i).getBitmap());
+            // mPolygons[i].setBitmap(mBitmapDrawableList.get(i).getBitmap());
+            mPolygons[i].setBorderWidth(mBorderWidth);
+            mPolygons[i].setAngleRoundness(mAngleRoundness);
             mPolygons[i].draw(canvas, mPaint);
         }
-
     }
 
     /**
@@ -193,30 +194,35 @@ public class PuzzleView extends View {
         }
     }
 
-    public int getContainLeft() {
+    public float getContainLeft() {
         return mLeft;
     }
 
-    public int getContainTop() {
+    public float getContainTop() {
         return mTop;
     }
 
-    public int getContainRight() {
+    public float getContainRight() {
         return mRight;
     }
 
-    public int getContainBottom() {
+    public float getContainBottom() {
         return mBottom;
     }
 
-    public int getContainHeight() {
+    public float getContainHeight() {
         return mBottom - mTop;
     }
 
-    public int getContainWidth() {
+    public float getContainWidth() {
         return mRight - mLeft;
     }
     public void setBorderWidth(int width) {
-        //mLineWidth = width;
+        mBorderWidth = width;
+        invalidate();
+    }
+    public void setAngleRoundness(int progress) {
+        mAngleRoundness = progress;
+        invalidate();
     }
 }

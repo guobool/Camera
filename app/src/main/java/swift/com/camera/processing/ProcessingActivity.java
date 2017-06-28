@@ -16,6 +16,7 @@ import static com.squareup.haha.guava.base.Joiner.checkNotNull;
 
 /**
  * Created by bool on 17-4-11.
+ *
  */
 
 public class ProcessingActivity extends AppCompatActivity implements ProcessingContract.View{

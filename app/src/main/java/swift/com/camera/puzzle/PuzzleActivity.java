@@ -2,12 +2,16 @@ package swift.com.camera.puzzle;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ViewTreeObserver;
+import android.widget.SeekBar;
+
+import com.github.siyamed.shapeimageview.BubbleImageView;
 
 import javax.inject.Inject;
 import swift.com.camera.R;
@@ -23,6 +27,7 @@ public class PuzzleActivity extends AppCompatActivity implements PuzzleContract.
     @Inject
     PuzzleContract.Presenter mPresenter;
     protected PuzzleView mPuzzleView;
+    protected SeekBar mSbBorderWidth, mSbAngleRoundness;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,16 +37,41 @@ public class PuzzleActivity extends AppCompatActivity implements PuzzleContract.
                 .build()
                 .inject(this);
         mPuzzleView = (PuzzleView)findViewById(R.id.pv_puzzle);
+        mSbBorderWidth = (SeekBar)findViewById(R.id.sb_border_width);
+        mSbAngleRoundness = (SeekBar)findViewById(R.id.sb_angle_roundness);
+        mSbBorderWidth.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mPuzzleView.setBorderWidth(mSbBorderWidth.getProgress());
+            }
 
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+        mSbAngleRoundness.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mPuzzleView.setAngleRoundness(mSbAngleRoundness.getProgress());
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
         //增加整体布局监听
         ViewTreeObserver vto = mPuzzleView.getViewTreeObserver();
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
             @Override
             public void onGlobalLayout() {
-                float left = mPuzzleView.getContainLeft()+10;
-                float top = mPuzzleView.getContainTop()+10;
-                float right = mPuzzleView.getContainRight()-10;
-                float button = mPuzzleView.getContainBottom()-10;
+                float left = mPuzzleView.getContainLeft();
+                float top = mPuzzleView.getContainTop();
+                float right = mPuzzleView.getContainRight();
+                float button = mPuzzleView.getContainBottom();
                 PointF point = new PointF(left, top);
                 PointF point2 = new PointF(right, top);
                 PointF point3 = new PointF(right, button);
