@@ -3,6 +3,8 @@ package com.swift.camera.Album;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
@@ -12,22 +14,21 @@ import com.swift.camera.R;
  * Created by bool on 17-4-18.
  */
 
-public class SelectImageView extends FrameLayout {
+public class SelectImageItem extends FrameLayout {
     ImageView mIvPicture;
-    //private CheckBox mCkSelectPicture; 多选按钮，方便将来扩展
-    public SelectImageView(@NonNull Context context) {
+    CheckBox mCkSelect; // 多选按钮，方便将来扩展
+    public SelectImageItem(@NonNull Context context) {
         super(context);
         LayoutInflater.from(context).inflate(R.layout.image_select_item, this, true);
         mIvPicture = (ImageView)findViewById(R.id.ivPicture);
-        //mCkSelectPicture = (CheckBox)findViewById(R.id.cbSelect);
+        mCkSelect = (CheckBox)findViewById(R.id.cb_image_select);
     }
-
-//    public void setImage(@NonNull Bitmap bitmap){
-//        //mBitmap = bitmap;
-//        mIvPicture.setImageBitmap(bitmap);
-//    }
 
     public ImageView getImageView(){
         return mIvPicture;
+    }
+
+    public void listernSelectChange(CompoundButton.OnCheckedChangeListener listener) {
+        mCkSelect.setOnCheckedChangeListener(listener);
     }
 }

@@ -1,9 +1,9 @@
 package com.swift.camera.Album;
 
-import dagger.Component;
 import com.swift.camera.data.PictureRepositoryComponent;
 import com.swift.camera.utils.ActivityScoped;
 
+import dagger.Component;
 /**
  * Created by bool on 17-4-18.
  */

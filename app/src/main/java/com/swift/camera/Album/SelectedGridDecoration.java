@@ -8,13 +8,12 @@ import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.View;
 
 /**
- * Created by bool on 17-4-14.
+ * Created by bool on 17-6-19.
  */
 
-public class DivideItemDecoration extends RecyclerView.ItemDecoration {
-
-
-    public DivideItemDecoration(Context context){
+public class SelectedGridDecoration extends RecyclerView.ItemDecoration{
+    public SelectedGridDecoration(Context context){
+        super();
     }
     private int getSpanCount(RecyclerView parent)
     {
@@ -39,13 +38,12 @@ public class DivideItemDecoration extends RecyclerView.ItemDecoration {
         int itemPosition = parent.getChildAdapterPosition(view);
         if (itemPosition > (itemCount - (itemCount % spanCount))) {
             // 如果是最后一行，则不需要需要绘制底部
-            outRect.set(0, 0, 10, 0);
+            outRect.set(0, 0, 15, 0);
         } else if ((itemPosition + 1) % spanCount == 0) {
             // 如果是最后一列，则不需要绘制右边
-            outRect.set(0, 0, 0, 10);
+            outRect.set(0, 0, 0, 15);
         } else {
-            outRect.set(0, 0, 10, 10);
+            outRect.set(0, 0, 15, 15);
         }
     }
-
 }

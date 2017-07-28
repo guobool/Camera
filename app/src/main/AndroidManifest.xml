@@ -30,6 +30,7 @@
         <activity android:name=".processing.ProcessingActivity"/>
         <activity android:name=".Album.AlbumActivity"/>
         <activity android:name=".beautify.BeautifyActivity"/>
+        <activity android:name=".puzzle.PuzzleActivity" />
     </application>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>

@@ -2,14 +2,16 @@ package com.swift.camera.Album;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.widget.ImageView;
-import java.util.List;
-import javax.inject.Inject;
+
 import com.swift.camera.beautify.BeautifyActivity;
-import com.swift.camera.data.PictureBean;
+import com.swift.camera.data.PictureDataSource;
+import com.swift.camera.data.PictureInfo;
 import com.swift.camera.data.PictureRepository;
-import static com.swift.camera.data.PictureDataSource.*;
+import com.swift.camera.data.PicturesFolder;
+
+import java.util.List;
+
+import javax.inject.Inject;
 
 /**
  * Created by bool on 17-4-14.
@@ -18,7 +20,7 @@ import static com.swift.camera.data.PictureDataSource.*;
 class AlbumPresenter implements AlbumContract.Presenter {
     private PictureRepository mPictureRepository;
     private AlbumContract.View mAlbumView;
-    private List<PictureBean> mImagesBean;
+    private List<PictureInfo> mImagesBean;
     @Inject
     public AlbumPresenter(PictureRepository repository, AlbumContract.View albumView){
         mPictureRepository = repository;
@@ -40,25 +42,28 @@ class AlbumPresenter implements AlbumContract.Presenter {
 
 
     @Override
-    public void getImagesList() {
-        mPictureRepository.loadPicture(new LoadPictureCallBack() {
+    public void loadImages() {
+        mPictureRepository.loadPicture(new PictureDataSource.LoadPictureCallBack() {
             @Override
-            public void onPictureLoaded(List<PictureBean> pictureBeanList) {
-                if(pictureBeanList != null){
-                    mAlbumView.pictureBeanLoaded(pictureBeanList);
+            public void onPictureLoaded(PicturesFolder picturesFolder) {
+                if(picturesFolder != null){
+                    mAlbumView.showFolderList(picturesFolder);
+                } else {
+                    this.onLoadFailed();
                 }
             }
 
             @Override
             public void onLoadFailed() {
+                mAlbumView.showNoPictures();
             }
         });
     }
 
     @Override
-    public void toBeaytifyActivity(PictureBean pictureBean) {
+    public void toBeaytifyActivity(PictureInfo PictureInfo) {
         Intent intent = new Intent((Context) mAlbumView, BeautifyActivity.class);
-        intent.putExtra("PictureBean", pictureBean);
+        intent.putExtra("PictureInfo", PictureInfo);
         ((Context) mAlbumView).startActivity(intent);
     }
 }

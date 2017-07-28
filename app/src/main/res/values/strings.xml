@@ -19,4 +19,9 @@
     <string name="sticker">贴纸</string>
     <string name="cosmetology">美容</string>
     <string name="no_filter">原始</string>
+    <string name="select_count">已选(%1$s/9)</string>
+    <string name="complete_select">完成</string>
+    <string name="no_image">没有图片</string>
+    <string name="grant_advice_read_album">请授予应用读取权限后再试</string>
+
 </resources>

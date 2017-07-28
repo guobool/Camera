@@ -11,6 +11,7 @@ import com.swift.camera.R;
 import com.swift.camera.Album.AlbumActivity;
 import com.swift.camera.TheApplication;
 import com.swift.camera.beautify.BeautifyActivity;
+import com.swift.camera.puzzle.PuzzleActivity;
 import com.swift.camera.ui.view.FunctionLayout;
 
 import static com.squareup.haha.guava.base.Joiner.checkNotNull;
@@ -57,15 +58,10 @@ public class ProcessingActivity extends AppCompatActivity implements ProcessingC
         mRlPuzzle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mPresenter.jumpAlbumPage();
+                startActivity(new Intent(ProcessingActivity.this, PuzzleActivity.class));
             }
         });
-        mRlPictureInPicture.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPresenter.jumpAlbumPage();
-            }
-        });
+
     }
 
 

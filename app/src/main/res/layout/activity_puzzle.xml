@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/darkGrey">
+
+    <com.swift.camera.ui.view.puzzle.PuzzleView
+        android:id="@+id/pv_puzzle"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:srcCompat="@mipmap/background"
+        android:contentDescription="显示"
+        tools:ignore="HardcodedText" />
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:orientation="horizontal"
+        >
+
+        <Button
+            android:id="@+id/button12"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/vector_drawable_rectangle"
+            android:textColor="@color/white"
+            android:text="板式"
+            tools:ignore="ButtonStyle,HardcodedText"
+            android:layout_marginStart="18dp"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/button9" />
+
+        <Button
+            android:id="@+id/button9"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/vector_drawable_rectangle"
+            android:textColor="@color/white"
+            android:text="边框"
+            tools:ignore="ButtonStyle,HardcodedText" />
+
+        <Button
+            android:id="@+id/button8"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/vector_drawable_rectangle"
+            android:textColor="@color/white"
+            android:text="背景"
+            tools:ignore="ButtonStyle,HardcodedText"
+            android:layout_alignParentTop="true"
+            android:layout_toStartOf="@+id/button9"
+            android:layout_marginEnd="16dp" />
+    </RelativeLayout>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp">
+        <include
+            android:id="@+id/include3"
+            layout="@layout/puzzle_background_list"
+            android:visibility="gone"/>
+        <include
+            android:id="@+id/include1"
+            layout="@layout/puzzle_style_list"
+            android:visibility="gone"/>
+
+        <include
+            android:id="@+id/include2"
+            layout="@layout/puzzle_border_adjust" />
+
+    </FrameLayout>
+
+
+    <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="80dp"-->
+        <!--android:orientation="horizontal">-->
+        <!--<ImageView-->
+            <!--android:id="@+id/imageView6"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_gravity="center_vertical"-->
+            <!--android:layout_margin="15dp"-->
+            <!--android:src="@drawable/vector_drawable_frame"-->
+            <!--tools:ignore="ContentDescription" />-->
+
+        <!--<android.support.v7.widget.RecyclerView-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent" />-->
+    <!--</LinearLayout>-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        >
+        <ImageView
+            android:id="@+id/iv_discard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/vector_drawable_close"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/iv_frame"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/vector_drawable_frame"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/iv_magzine"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/vector_drawable_magzine"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/iv_save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/vector_drawable_save"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            tools:ignore="ContentDescription" />
+
+    </LinearLayout>
+</LinearLayout>
